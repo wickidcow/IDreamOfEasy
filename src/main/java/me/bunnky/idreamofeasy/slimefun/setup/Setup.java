@@ -74,7 +74,7 @@ public class Setup {
 
         IDreamOfEasy plugin = IDreamOfEasy.getInstance();
 
-        ItemStack groupItem = CustomItemStack.create(Material.CALIBRATED_SCULK_SENSOR, "&2I Dream of Easy", "", "I wish this worked!");
+        ItemStack groupItem = new CustomItemStack(Material.CALIBRATED_SCULK_SENSOR, "&2I Dream of Easy", "", "I wish this worked!");
         NamespacedKey groupId = new NamespacedKey(IDreamOfEasy.getInstance(), "i_dream_of_easy");
         ItemGroup group = new ItemGroup(groupId, groupItem);
 
@@ -168,7 +168,7 @@ public class Setup {
 
         SlimefunItemStack electricCable = new SlimefunItemStack(
             "IDOE_ELECTRIC_CABLE",
-            Material.CHAIN,
+            Material.IRON_CHAIN,
             "&aElectric Cable",
             "",
             "&fDamages anything that touches it",
@@ -745,210 +745,210 @@ public class Setup {
         ///////////////// MACHINES ///////////////////
         //////////////////////////////////////////////
         ItemStack[] playerHopperRecipe = {
-            SlimefunItems.ENERGY_CONNECTOR.item(), SlimefunItems.EARTH_RUNE.item(), SlimefunItems.INFUSED_MAGNET.item(),
-            SlimefunItems.ENDER_RUNE.item(), SlimefunItems.INFUSED_HOPPER.item(), SlimefunItems.ENDER_RUNE.item(),
-            SlimefunItems.INFUSED_MAGNET.item(), SlimefunItems.EARTH_RUNE.item(), SlimefunItems.ENERGY_CONNECTOR.item()
+            SlimefunItems.ENERGY_CONNECTOR, SlimefunItems.EARTH_RUNE, SlimefunItems.INFUSED_MAGNET,
+            SlimefunItems.ENDER_RUNE, SlimefunItems.INFUSED_HOPPER, SlimefunItems.ENDER_RUNE,
+            SlimefunItems.INFUSED_MAGNET, SlimefunItems.EARTH_RUNE, SlimefunItems.ENERGY_CONNECTOR
         };
 
         ItemStack[] supplyHopperRecipe = {
-            SlimefunItems.ENERGY_CONNECTOR.item(), SlimefunItems.EARTH_RUNE.item(), SlimefunItems.INFUSED_MAGNET.item(),
-            SlimefunItems.ENDER_RUNE.item(), new ItemStack(Material.DROPPER), SlimefunItems.ENDER_RUNE.item(),
-            SlimefunItems.INFUSED_MAGNET.item(), SlimefunItems.EARTH_RUNE.item(), SlimefunItems.ENERGY_CONNECTOR.item()
+            SlimefunItems.ENERGY_CONNECTOR, SlimefunItems.EARTH_RUNE, SlimefunItems.INFUSED_MAGNET,
+            SlimefunItems.ENDER_RUNE, new ItemStack(Material.DROPPER), SlimefunItems.ENDER_RUNE,
+            SlimefunItems.INFUSED_MAGNET, SlimefunItems.EARTH_RUNE, SlimefunItems.ENERGY_CONNECTOR
         };
 
         ItemStack[] stackDispenserRecipe = {
-            SlimefunItems.STEEL_PLATE.item(), SlimefunItems.BATTERY.item(), SlimefunItems.STEEL_PLATE.item(),
-            SlimefunItems.ELECTRIC_MOTOR.item(), SlimefunItems.BLOCK_PLACER.item(), SlimefunItems.ELECTRIC_MOTOR.item(),
-            SlimefunItems.STEEL_PLATE.item(), SlimefunItems.BATTERY.item(), SlimefunItems.STEEL_PLATE.item()
+            SlimefunItems.STEEL_PLATE, SlimefunItems.BATTERY, SlimefunItems.STEEL_PLATE,
+            SlimefunItems.ELECTRIC_MOTOR, SlimefunItems.BLOCK_PLACER, SlimefunItems.ELECTRIC_MOTOR,
+            SlimefunItems.STEEL_PLATE, SlimefunItems.BATTERY, SlimefunItems.STEEL_PLATE
         };
 
         ItemStack[] electricCableRecipe = {
-            new ItemStack(Material.CHAIN), new ItemStack(Material.CHAIN), new ItemStack(Material.CHAIN),
-            new ItemStack(Material.CHAIN), SlimefunItems.ENERGY_CONNECTOR.item(), new ItemStack(Material.CHAIN),
-            new ItemStack(Material.CHAIN), new ItemStack(Material.CHAIN), new ItemStack(Material.CHAIN)
+            new ItemStack(Material.IRON_CHAIN), new ItemStack(Material.IRON_CHAIN), new ItemStack(Material.IRON_CHAIN),
+            new ItemStack(Material.IRON_CHAIN), SlimefunItems.ENERGY_CONNECTOR, new ItemStack(Material.IRON_CHAIN),
+            new ItemStack(Material.IRON_CHAIN), new ItemStack(Material.IRON_CHAIN), new ItemStack(Material.IRON_CHAIN)
         };
 
         ItemStack[] electricCable2Recipe = {
-            electricCable.item(), electricCable.item(), electricCable.item(),
-            electricCable.item(), SlimefunItems.ENERGY_CONNECTOR.item(), electricCable.item(),
-            electricCable.item(), electricCable.item(), electricCable.item()
+            electricCable, electricCable, electricCable,
+            electricCable, SlimefunItems.ENERGY_CONNECTOR, electricCable,
+            electricCable, electricCable, electricCable
         };
 
         ItemStack[] electricCable3Recipe = {
-            electricCable2.item(), electricCable2.item(), electricCable2.item(),
-            electricCable2.item(), SlimefunItems.ENERGY_CONNECTOR.item(), electricCable2.item(),
-            electricCable2.item(), electricCable2.item(), electricCable2.item()
+            electricCable2, electricCable2, electricCable2,
+            electricCable2, SlimefunItems.ENERGY_CONNECTOR, electricCable2,
+            electricCable2, electricCable2, electricCable2
         };
 
         ItemStack[] radiationAbsorberRecipe = {
-            SlimefunItems.REINFORCED_PLATE.item(), SlimefunItems.NETHER_ICE_COOLANT_CELL.item(), SlimefunItems.REINFORCED_PLATE.item(),
-            SlimefunItems.HEATING_COIL.item(), SlimefunItems.BLISTERING_INGOT_3.item(), SlimefunItems.HEATING_COIL.item(),
-            SlimefunItems.REINFORCED_PLATE.item(), SlimefunItems.NETHER_ICE_COOLANT_CELL.item(), SlimefunItems.REINFORCED_PLATE.item()
+            SlimefunItems.REINFORCED_PLATE, SlimefunItems.NETHER_ICE_COOLANT_CELL, SlimefunItems.REINFORCED_PLATE,
+            SlimefunItems.HEATING_COIL, SlimefunItems.BLISTERING_INGOT_3, SlimefunItems.HEATING_COIL,
+            SlimefunItems.REINFORCED_PLATE, SlimefunItems.NETHER_ICE_COOLANT_CELL, SlimefunItems.REINFORCED_PLATE
         };
 
         ItemStack[] radiationAbsorber2Recipe = {
-            SlimefunItems.REINFORCED_PLATE.item(), SlimefunItems.NETHER_ICE_COOLANT_CELL.item(), SlimefunItems.REINFORCED_PLATE.item(),
-            SlimefunItems.HEATING_COIL.item(), radiationAbsorber.item(), SlimefunItems.HEATING_COIL.item(),
-            SlimefunItems.REINFORCED_PLATE.item(), SlimefunItems.NETHER_ICE_COOLANT_CELL.item(), SlimefunItems.REINFORCED_PLATE.item()
+            SlimefunItems.REINFORCED_PLATE, SlimefunItems.NETHER_ICE_COOLANT_CELL, SlimefunItems.REINFORCED_PLATE,
+            SlimefunItems.HEATING_COIL, radiationAbsorber, SlimefunItems.HEATING_COIL,
+            SlimefunItems.REINFORCED_PLATE, SlimefunItems.NETHER_ICE_COOLANT_CELL, SlimefunItems.REINFORCED_PLATE
         };
 
         ItemStack[] radiationAbsorber3Recipe = {
-            SlimefunItems.REINFORCED_PLATE.item(), SlimefunItems.NETHER_ICE_COOLANT_CELL.item(), SlimefunItems.REINFORCED_PLATE.item(),
-            SlimefunItems.HEATING_COIL.item(), radiationAbsorber2.item(), SlimefunItems.HEATING_COIL.item(),
-            SlimefunItems.REINFORCED_PLATE.item(), SlimefunItems.NETHER_ICE_COOLANT_CELL.item(), SlimefunItems.REINFORCED_PLATE.item()
+            SlimefunItems.REINFORCED_PLATE, SlimefunItems.NETHER_ICE_COOLANT_CELL, SlimefunItems.REINFORCED_PLATE,
+            SlimefunItems.HEATING_COIL, radiationAbsorber2, SlimefunItems.HEATING_COIL,
+            SlimefunItems.REINFORCED_PLATE, SlimefunItems.NETHER_ICE_COOLANT_CELL, SlimefunItems.REINFORCED_PLATE
         };
 
         ItemStack[] electricBlastFurnaceRecipe = {
-            null, SlimefunItems.BATTERY.item(), null,
-            SlimefunItems.ELECTRIC_MOTOR.item(), new ItemStack(Material.BLAST_FURNACE), SlimefunItems.ELECTRIC_MOTOR.item(),
-            SlimefunItems.HEATING_COIL.item(), SlimefunItems.ELECTRIC_MOTOR.item(), SlimefunItems.HEATING_COIL.item()
+            null, SlimefunItems.BATTERY, null,
+            SlimefunItems.ELECTRIC_MOTOR, new ItemStack(Material.BLAST_FURNACE), SlimefunItems.ELECTRIC_MOTOR,
+            SlimefunItems.HEATING_COIL, SlimefunItems.ELECTRIC_MOTOR, SlimefunItems.HEATING_COIL
         };
 
         ItemStack[] electricBlastFurnaceRecipe2 = {
-            null, SlimefunItems.BATTERY.item(), null,
-            SlimefunItems.ELECTRIC_MOTOR.item(), electricBlastFurnace.item(), SlimefunItems.ELECTRIC_MOTOR.item(),
-            SlimefunItems.HEATING_COIL.item(), SlimefunItems.ELECTRIC_MOTOR.item(), SlimefunItems.HEATING_COIL.item()
+            null, SlimefunItems.BATTERY, null,
+            SlimefunItems.ELECTRIC_MOTOR, electricBlastFurnace, SlimefunItems.ELECTRIC_MOTOR,
+            SlimefunItems.HEATING_COIL, SlimefunItems.ELECTRIC_MOTOR, SlimefunItems.HEATING_COIL
         };
 
         ItemStack[] electricBlastFurnaceRecipe3 = {
-            null, SlimefunItems.BATTERY.item(), null,
-            SlimefunItems.ELECTRIC_MOTOR.item(), electricBlastFurnace2.item(), SlimefunItems.ELECTRIC_MOTOR.item(),
-            SlimefunItems.HEATING_COIL.item(), SlimefunItems.ELECTRIC_MOTOR.item(), SlimefunItems.HEATING_COIL.item()
+            null, SlimefunItems.BATTERY, null,
+            SlimefunItems.ELECTRIC_MOTOR, electricBlastFurnace2, SlimefunItems.ELECTRIC_MOTOR,
+            SlimefunItems.HEATING_COIL, SlimefunItems.ELECTRIC_MOTOR, SlimefunItems.HEATING_COIL
         };
 
         ItemStack[] electricSmokerRecipe = {
-            new ItemStack(Material.FLINT_AND_STEEL), SlimefunItems.BATTERY.item(), null,
-            SlimefunItems.ELECTRIC_MOTOR.item(), new ItemStack(Material.SMOKER), SlimefunItems.ELECTRIC_MOTOR.item(),
-            SlimefunItems.HEATING_COIL.item(), SlimefunItems.ELECTRIC_MOTOR.item(), SlimefunItems.IGNITION_CHAMBER.item()
+            new ItemStack(Material.FLINT_AND_STEEL), SlimefunItems.BATTERY, null,
+            SlimefunItems.ELECTRIC_MOTOR, new ItemStack(Material.SMOKER), SlimefunItems.ELECTRIC_MOTOR,
+            SlimefunItems.HEATING_COIL, SlimefunItems.ELECTRIC_MOTOR, SlimefunItems.IGNITION_CHAMBER
         };
 
         ItemStack[] electricSmokerRecipe2 = {
-            new ItemStack(Material.FLINT_AND_STEEL), SlimefunItems.BATTERY.item(), null,
-            SlimefunItems.ELECTRIC_MOTOR.item(), electricSmoker.item(), SlimefunItems.ELECTRIC_MOTOR.item(),
-            SlimefunItems.HEATING_COIL.item(), SlimefunItems.ELECTRIC_MOTOR.item(), SlimefunItems.IGNITION_CHAMBER.item()
+            new ItemStack(Material.FLINT_AND_STEEL), SlimefunItems.BATTERY, null,
+            SlimefunItems.ELECTRIC_MOTOR, electricSmoker, SlimefunItems.ELECTRIC_MOTOR,
+            SlimefunItems.HEATING_COIL, SlimefunItems.ELECTRIC_MOTOR, SlimefunItems.IGNITION_CHAMBER
         };
 
         ItemStack[] electricSmokerRecipe3 = {
-            new ItemStack(Material.FLINT_AND_STEEL), SlimefunItems.BATTERY.item(), null,
-            SlimefunItems.ELECTRIC_MOTOR.item(), electricSmoker2.item(), SlimefunItems.ELECTRIC_MOTOR.item(),
-            SlimefunItems.HEATING_COIL.item(), SlimefunItems.ELECTRIC_MOTOR.item(), SlimefunItems.IGNITION_CHAMBER.item()
+            new ItemStack(Material.FLINT_AND_STEEL), SlimefunItems.BATTERY, null,
+            SlimefunItems.ELECTRIC_MOTOR, electricSmoker2, SlimefunItems.ELECTRIC_MOTOR,
+            SlimefunItems.HEATING_COIL, SlimefunItems.ELECTRIC_MOTOR, SlimefunItems.IGNITION_CHAMBER
         };
 
         ItemStack[] electricLogStripperRecipe = {
-            SlimefunItems.LUMBER_AXE.item(), SlimefunItems.BATTERY.item(), null,
-            SlimefunItems.ELECTRIC_MOTOR.item(), new ItemStack(Material.STONECUTTER), SlimefunItems.ELECTRIC_MOTOR.item(),
-            SlimefunItems.COPPER_WIRE.item(), SlimefunItems.ELECTRIC_MOTOR.item(), SlimefunItems.COPPER_WIRE.item()
+            SlimefunItems.LUMBER_AXE, SlimefunItems.BATTERY, null,
+            SlimefunItems.ELECTRIC_MOTOR, new ItemStack(Material.STONECUTTER), SlimefunItems.ELECTRIC_MOTOR,
+            SlimefunItems.COPPER_WIRE, SlimefunItems.ELECTRIC_MOTOR, SlimefunItems.COPPER_WIRE
         };
 
         ItemStack[] electricLogStripperRecipe2 = {
-            SlimefunItems.LUMBER_AXE.item(), SlimefunItems.BATTERY.item(), null,
-            SlimefunItems.ELECTRIC_MOTOR.item(), electricLogStripper.item(), SlimefunItems.ELECTRIC_MOTOR.item(),
-            SlimefunItems.COPPER_WIRE.item(), SlimefunItems.ELECTRIC_MOTOR.item(), SlimefunItems.COPPER_WIRE.item()
+            SlimefunItems.LUMBER_AXE, SlimefunItems.BATTERY, null,
+            SlimefunItems.ELECTRIC_MOTOR, electricLogStripper, SlimefunItems.ELECTRIC_MOTOR,
+            SlimefunItems.COPPER_WIRE, SlimefunItems.ELECTRIC_MOTOR, SlimefunItems.COPPER_WIRE
         };
 
         ItemStack[] electricLogStripperRecipe3 = {
-            SlimefunItems.LUMBER_AXE.item(), SlimefunItems.BATTERY.item(), null,
-            SlimefunItems.ELECTRIC_MOTOR.item(), electricLogStripper2.item(), SlimefunItems.ELECTRIC_MOTOR.item(),
-            SlimefunItems.COPPER_WIRE.item(), SlimefunItems.ELECTRIC_MOTOR.item(), SlimefunItems.COPPER_WIRE.item()
+            SlimefunItems.LUMBER_AXE, SlimefunItems.BATTERY, null,
+            SlimefunItems.ELECTRIC_MOTOR, electricLogStripper2, SlimefunItems.ELECTRIC_MOTOR,
+            SlimefunItems.COPPER_WIRE, SlimefunItems.ELECTRIC_MOTOR, SlimefunItems.COPPER_WIRE
         };
 
         ItemStack[] electricShererRecipe = {
-            SlimefunItems.SOLAR_PANEL.item(), SlimefunItems.BATTERY.item(), SlimefunItems.SOLAR_PANEL.item(),
-            SlimefunItems.GOLD_22K.item(), new ItemStack(Material.SHEARS), SlimefunItems.GOLD_22K.item(),
-            SlimefunItems.GOLD_22K.item(), SlimefunItems.ELECTRIC_MOTOR.item(), SlimefunItems.GOLD_22K.item()
+            SlimefunItems.SOLAR_PANEL, SlimefunItems.BATTERY, SlimefunItems.SOLAR_PANEL,
+            SlimefunItems.GOLD_22K, new ItemStack(Material.SHEARS), SlimefunItems.GOLD_22K,
+            SlimefunItems.GOLD_22K, SlimefunItems.ELECTRIC_MOTOR, SlimefunItems.GOLD_22K
         };
 
         ItemStack[] electricPoisonExtractorRecipe = {
-            null, SlimefunItems.HARDENED_GLASS.item(), null,
-            SlimefunItems.CARBONADO.item(), SlimefunItems.AUTO_BREWER.item(), SlimefunItems.CARBONADO.item(),
-            SlimefunItems.CORINTHIAN_BRONZE_INGOT.item(), SlimefunItems.CORINTHIAN_BRONZE_INGOT.item(), SlimefunItems.CORINTHIAN_BRONZE_INGOT.item()
+            null, SlimefunItems.HARDENED_GLASS, null,
+            SlimefunItems.CARBONADO, SlimefunItems.AUTO_BREWER, SlimefunItems.CARBONADO,
+            SlimefunItems.CORINTHIAN_BRONZE_INGOT, SlimefunItems.CORINTHIAN_BRONZE_INGOT, SlimefunItems.CORINTHIAN_BRONZE_INGOT
         };
 
         ItemStack[] zombieRepellerRecipe = {
-            new ItemStack(Material.NETHERITE_SWORD), new ItemStack(Material.ZOMBIE_HEAD), SlimefunItems.GRAPPLING_HOOK.item(),
-            SlimefunItems.MAGICAL_GLASS.item(), SlimefunItems.NECROTIC_SKULL.item(), SlimefunItems.MAGICAL_GLASS.item(),
-            SlimefunItems.TRASH_CAN.item(), SlimefunItems.LAVA_CRYSTAL.item(), SlimefunItems.NEPTUNIUM.item()
+            new ItemStack(Material.NETHERITE_SWORD), new ItemStack(Material.ZOMBIE_HEAD), SlimefunItems.GRAPPLING_HOOK,
+            SlimefunItems.MAGICAL_GLASS, SlimefunItems.NECROTIC_SKULL, SlimefunItems.MAGICAL_GLASS,
+            SlimefunItems.TRASH_CAN, SlimefunItems.LAVA_CRYSTAL, SlimefunItems.NEPTUNIUM
         };
 
         ItemStack[] spiderRepellerRecipe = {
-            new ItemStack(Material.NETHERITE_SWORD), new ItemStack(Material.SPIDER_EYE), SlimefunItems.GRAPPLING_HOOK.item(),
-            SlimefunItems.MAGICAL_GLASS.item(), SlimefunItems.NECROTIC_SKULL.item(), SlimefunItems.MAGICAL_GLASS.item(),
-            SlimefunItems.TRASH_CAN.item(), SlimefunItems.LAVA_CRYSTAL.item(), SlimefunItems.NEPTUNIUM.item()
+            new ItemStack(Material.NETHERITE_SWORD), new ItemStack(Material.SPIDER_EYE), SlimefunItems.GRAPPLING_HOOK,
+            SlimefunItems.MAGICAL_GLASS, SlimefunItems.NECROTIC_SKULL, SlimefunItems.MAGICAL_GLASS,
+            SlimefunItems.TRASH_CAN, SlimefunItems.LAVA_CRYSTAL, SlimefunItems.NEPTUNIUM
         };
 
         ItemStack[] skeletonRepellerRecipe = {
-            new ItemStack(Material.NETHERITE_SWORD), new ItemStack(Material.SKELETON_SKULL), SlimefunItems.GRAPPLING_HOOK.item(),
-            SlimefunItems.MAGICAL_GLASS.item(), SlimefunItems.NECROTIC_SKULL.item(), SlimefunItems.MAGICAL_GLASS.item(),
-            SlimefunItems.TRASH_CAN.item(), SlimefunItems.LAVA_CRYSTAL.item(), SlimefunItems.NEPTUNIUM.item()
+            new ItemStack(Material.NETHERITE_SWORD), new ItemStack(Material.SKELETON_SKULL), SlimefunItems.GRAPPLING_HOOK,
+            SlimefunItems.MAGICAL_GLASS, SlimefunItems.NECROTIC_SKULL, SlimefunItems.MAGICAL_GLASS,
+            SlimefunItems.TRASH_CAN, SlimefunItems.LAVA_CRYSTAL, SlimefunItems.NEPTUNIUM
         };
 
         ItemStack[] creeperRepellerRecipe = {
-            new ItemStack(Material.NETHERITE_SWORD), new ItemStack(Material.CREEPER_HEAD), SlimefunItems.GRAPPLING_HOOK.item(),
-            SlimefunItems.MAGICAL_GLASS.item(), SlimefunItems.NECROTIC_SKULL.item(), SlimefunItems.MAGICAL_GLASS.item(),
-            SlimefunItems.TRASH_CAN.item(), SlimefunItems.LAVA_CRYSTAL.item(), SlimefunItems.NEPTUNIUM.item()
+            new ItemStack(Material.NETHERITE_SWORD), new ItemStack(Material.CREEPER_HEAD), SlimefunItems.GRAPPLING_HOOK,
+            SlimefunItems.MAGICAL_GLASS, SlimefunItems.NECROTIC_SKULL, SlimefunItems.MAGICAL_GLASS,
+            SlimefunItems.TRASH_CAN, SlimefunItems.LAVA_CRYSTAL, SlimefunItems.NEPTUNIUM
         };
 
         ItemStack[] slimeRepellerRecipe = {
-            new ItemStack(Material.NETHERITE_SWORD), new ItemStack(Material.SLIME_BLOCK), SlimefunItems.GRAPPLING_HOOK.item(),
-            SlimefunItems.MAGICAL_GLASS.item(), SlimefunItems.NECROTIC_SKULL.item(), SlimefunItems.MAGICAL_GLASS.item(),
-            SlimefunItems.TRASH_CAN.item(), SlimefunItems.LAVA_CRYSTAL.item(), SlimefunItems.NEPTUNIUM.item()
+            new ItemStack(Material.NETHERITE_SWORD), new ItemStack(Material.SLIME_BLOCK), SlimefunItems.GRAPPLING_HOOK,
+            SlimefunItems.MAGICAL_GLASS, SlimefunItems.NECROTIC_SKULL, SlimefunItems.MAGICAL_GLASS,
+            SlimefunItems.TRASH_CAN, SlimefunItems.LAVA_CRYSTAL, SlimefunItems.NEPTUNIUM
         };
 
         ItemStack[] zombieVillagerRepellerRecipe = {
-            new ItemStack(Material.NETHERITE_SWORD), new ItemStack(Material.ROTTEN_FLESH), SlimefunItems.GRAPPLING_HOOK.item(),
-            SlimefunItems.MAGICAL_GLASS.item(), SlimefunItems.NECROTIC_SKULL.item(), SlimefunItems.MAGICAL_GLASS.item(),
-            SlimefunItems.TRASH_CAN.item(), SlimefunItems.LAVA_CRYSTAL.item(), SlimefunItems.NEPTUNIUM.item()
+            new ItemStack(Material.NETHERITE_SWORD), new ItemStack(Material.ROTTEN_FLESH), SlimefunItems.GRAPPLING_HOOK,
+            SlimefunItems.MAGICAL_GLASS, SlimefunItems.NECROTIC_SKULL, SlimefunItems.MAGICAL_GLASS,
+            SlimefunItems.TRASH_CAN, SlimefunItems.LAVA_CRYSTAL, SlimefunItems.NEPTUNIUM
         };
 
         ItemStack[] batRepellerRecipe = {
-            new ItemStack(Material.NETHERITE_SWORD), new ItemStack(Material.APPLE), SlimefunItems.GRAPPLING_HOOK.item(),
-            SlimefunItems.MAGICAL_GLASS.item(), SlimefunItems.NECROTIC_SKULL.item(), SlimefunItems.MAGICAL_GLASS.item(),
-            SlimefunItems.TRASH_CAN.item(), SlimefunItems.LAVA_CRYSTAL.item(), SlimefunItems.NEPTUNIUM.item()
+            new ItemStack(Material.NETHERITE_SWORD), new ItemStack(Material.APPLE), SlimefunItems.GRAPPLING_HOOK,
+            SlimefunItems.MAGICAL_GLASS, SlimefunItems.NECROTIC_SKULL, SlimefunItems.MAGICAL_GLASS,
+            SlimefunItems.TRASH_CAN, SlimefunItems.LAVA_CRYSTAL, SlimefunItems.NEPTUNIUM
         };
 
         ItemStack[] endermanRepellerRecipe = {
-            new ItemStack(Material.NETHERITE_SWORD), new ItemStack(Material.ENDER_EYE), SlimefunItems.GRAPPLING_HOOK.item(),
-            SlimefunItems.MAGICAL_GLASS.item(), SlimefunItems.NECROTIC_SKULL.item(), SlimefunItems.MAGICAL_GLASS.item(),
-            SlimefunItems.TRASH_CAN.item(), SlimefunItems.LAVA_CRYSTAL.item(), SlimefunItems.NEPTUNIUM.item()
+            new ItemStack(Material.NETHERITE_SWORD), new ItemStack(Material.ENDER_EYE), SlimefunItems.GRAPPLING_HOOK,
+            SlimefunItems.MAGICAL_GLASS, SlimefunItems.NECROTIC_SKULL, SlimefunItems.MAGICAL_GLASS,
+            SlimefunItems.TRASH_CAN, SlimefunItems.LAVA_CRYSTAL, SlimefunItems.NEPTUNIUM
         };
 
         ItemStack[] witchRepellerRecipe = {
-            new ItemStack(Material.NETHERITE_SWORD), new ItemStack(Material.GLOWSTONE_DUST), SlimefunItems.GRAPPLING_HOOK.item(),
-            SlimefunItems.MAGICAL_GLASS.item(), SlimefunItems.NECROTIC_SKULL.item(), SlimefunItems.MAGICAL_GLASS.item(),
-            SlimefunItems.TRASH_CAN.item(), SlimefunItems.LAVA_CRYSTAL.item(), SlimefunItems.NEPTUNIUM.item()
+            new ItemStack(Material.NETHERITE_SWORD), new ItemStack(Material.GLOWSTONE_DUST), SlimefunItems.GRAPPLING_HOOK,
+            SlimefunItems.MAGICAL_GLASS, SlimefunItems.NECROTIC_SKULL, SlimefunItems.MAGICAL_GLASS,
+            SlimefunItems.TRASH_CAN, SlimefunItems.LAVA_CRYSTAL, SlimefunItems.NEPTUNIUM
         };
 
         //////////////////////////////////////////////
         /////////////////// TOOLS ////////////////////
         //////////////////////////////////////////////
         ItemStack[] magnetoidRecipe = {
-            null, SlimefunItems.GRAPPLING_HOOK.item(), null,
-            SlimefunItems.REDSTONE_ALLOY.item(), SlimefunItems.INFUSED_MAGNET.item(), SlimefunItems.REDSTONE_ALLOY.item(),
-            null, SlimefunItems.ELECTRIC_MOTOR.item(), null
+            null, SlimefunItems.GRAPPLING_HOOK, null,
+            SlimefunItems.REDSTONE_ALLOY, SlimefunItems.INFUSED_MAGNET, SlimefunItems.REDSTONE_ALLOY,
+            null, SlimefunItems.ELECTRIC_MOTOR, null
         };
 
         ItemStack[] jawnRecipe = {
-            SlimefunItems.ENCHANTMENT_RUNE.item(), SlimefunItems.ENCHANTMENT_RUNE.item(), SlimefunItems.ENCHANTMENT_RUNE.item(),
-            SlimefunItems.ENCHANTMENT_RUNE.item(), new ItemStack(Material.BONE), SlimefunItems.ENCHANTMENT_RUNE.item(),
-            SlimefunItems.ENCHANTMENT_RUNE.item(), SlimefunItems.ENCHANTMENT_RUNE.item(), SlimefunItems.ENCHANTMENT_RUNE.item()
+            SlimefunItems.ENCHANTMENT_RUNE, SlimefunItems.ENCHANTMENT_RUNE, SlimefunItems.ENCHANTMENT_RUNE,
+            SlimefunItems.ENCHANTMENT_RUNE, new ItemStack(Material.BONE), SlimefunItems.ENCHANTMENT_RUNE,
+            SlimefunItems.ENCHANTMENT_RUNE, SlimefunItems.ENCHANTMENT_RUNE, SlimefunItems.ENCHANTMENT_RUNE
         };
 
         ItemStack[] lavaBoatRecipe = {
             null, null, null,
-            new ItemStack(Material.OBSIDIAN), SlimefunItems.ELECTRIC_MOTOR.item(), new ItemStack(Material.OBSIDIAN),
+            new ItemStack(Material.OBSIDIAN), SlimefunItems.ELECTRIC_MOTOR, new ItemStack(Material.OBSIDIAN),
             new ItemStack(Material.OBSIDIAN), new ItemStack(Material.OBSIDIAN), new ItemStack(Material.OBSIDIAN)
         };
 
         ItemStack[] trimVaultRecipe = {
-            SlimefunItems.PLASTIC_SHEET.item(), SlimefunItems.SALT.item(), SlimefunItems.PLASTIC_SHEET.item(),
-            SlimefunItems.STEEL_PLATE.item(), new ItemStack(Material.NETHERITE_INGOT), SlimefunItems.STEEL_PLATE.item(),
-            SlimefunItems.PLASTIC_SHEET.item(), SlimefunItems.OUTPUT_CHEST.item(), SlimefunItems.PLASTIC_SHEET.item()
+            SlimefunItems.PLASTIC_SHEET, SlimefunItems.SALT, SlimefunItems.PLASTIC_SHEET,
+            SlimefunItems.STEEL_PLATE, new ItemStack(Material.NETHERITE_INGOT), SlimefunItems.STEEL_PLATE,
+            SlimefunItems.PLASTIC_SHEET, SlimefunItems.OUTPUT_CHEST, SlimefunItems.PLASTIC_SHEET
         };
 
         ItemStack[] wisterShearsRecipe = {
-            SlimefunItems.EARTH_RUNE.item(), new ItemStack(Material.SHORT_GRASS), SlimefunItems.EARTH_RUNE.item(),
-            SlimefunItems.EARTH_RUNE.item(), new ItemStack(Material.SHEARS), SlimefunItems.EARTH_RUNE.item(),
-            SlimefunItems.EARTH_RUNE.item(), new ItemStack(Material.OAK_LEAVES), SlimefunItems.EARTH_RUNE.item()
+            SlimefunItems.EARTH_RUNE, new ItemStack(Material.SHORT_GRASS), SlimefunItems.EARTH_RUNE,
+            SlimefunItems.EARTH_RUNE, new ItemStack(Material.SHEARS), SlimefunItems.EARTH_RUNE,
+            SlimefunItems.EARTH_RUNE, new ItemStack(Material.OAK_LEAVES), SlimefunItems.EARTH_RUNE
         };
 
         ItemStack[] biomeCompassRecipe = {
@@ -958,21 +958,21 @@ public class Setup {
         };
 
         ItemStack[] chiselRecipe = {
-            SlimefunItems.ALUMINUM_BRASS_INGOT.item(), null, SlimefunItems.ALUMINUM_BRASS_INGOT.item(),
-            SlimefunItems.ALUMINUM_BRASS_INGOT.item(), SlimefunItems.MEDIUM_CAPACITOR.item(), SlimefunItems.ALUMINUM_BRASS_INGOT.item(),
-            null, SlimefunItems.ALUMINUM_BRASS_INGOT.item(), null,
+            SlimefunItems.ALUMINUM_BRASS_INGOT, null, SlimefunItems.ALUMINUM_BRASS_INGOT,
+            SlimefunItems.ALUMINUM_BRASS_INGOT, SlimefunItems.MEDIUM_CAPACITOR, SlimefunItems.ALUMINUM_BRASS_INGOT,
+            null, SlimefunItems.ALUMINUM_BRASS_INGOT, null,
         };
 
         ItemStack[] electricPickRecipe = {
-            SlimefunItems.SYNTHETIC_DIAMOND.item(), SlimefunItems.EXPLOSIVE_PICKAXE.item(), SlimefunItems.SYNTHETIC_DIAMOND.item(),
-            null, SlimefunItems.BIG_CAPACITOR.item(), null,
-            null, SlimefunItems.SYNTHETIC_DIAMOND.item(), null,
+            SlimefunItems.SYNTHETIC_DIAMOND, SlimefunItems.EXPLOSIVE_PICKAXE, SlimefunItems.SYNTHETIC_DIAMOND,
+            null, SlimefunItems.BIG_CAPACITOR, null,
+            null, SlimefunItems.SYNTHETIC_DIAMOND, null,
         };
 
         ItemStack[] electricShovelRecipe = {
-            null, SlimefunItems.EXPLOSIVE_SHOVEL.item(), null,
-            null, SlimefunItems.BIG_CAPACITOR.item(), null,
-            null, SlimefunItems.SYNTHETIC_DIAMOND.item(), null,
+            null, SlimefunItems.EXPLOSIVE_SHOVEL, null,
+            null, SlimefunItems.BIG_CAPACITOR, null,
+            null, SlimefunItems.SYNTHETIC_DIAMOND, null,
         };
 
         ItemStack[] slimeMealRecipe = {
@@ -982,9 +982,9 @@ public class Setup {
         };
 
         ItemStack[] alarmClockRecipe = {
-            null, SlimefunItems.SOLAR_PANEL.item(), null,
-            SlimefunItems.REDSTONE_ALLOY.item(), new ItemStack(Material.CLOCK), SlimefunItems.REDSTONE_ALLOY.item(),
-            null, SlimefunItems.SMALL_CAPACITOR.item(), null
+            null, SlimefunItems.SOLAR_PANEL, null,
+            SlimefunItems.REDSTONE_ALLOY, new ItemStack(Material.CLOCK), SlimefunItems.REDSTONE_ALLOY,
+            null, SlimefunItems.SMALL_CAPACITOR, null
         };
 
         ItemStack[] tomeOfEnlightenmentRecipe = {
@@ -998,32 +998,32 @@ public class Setup {
         //////////////////////////////////////////////
 
         ItemStack[] flamheartIdolRecipe = {
-            SlimefunItem.getById("ENDER_LAVA_TALISMAN").getItem(), SlimefunItems.TALISMAN_LAVA.item(), SlimefunItem.getById("ENDER_WARRIOR_TALISMAN").getItem(),
-            SlimefunItems.TALISMAN_WARRIOR.item(), SlimefunItems.BOOSTED_URANIUM.item(), SlimefunItems.TALISMAN_KNIGHT.item(),
-            SlimefunItem.getById("ENDER_KNIGHT_TALISMAN").getItem(), SlimefunItems.TALISMAN_FIRE.item(), SlimefunItem.getById("ENDER_FIRE_TALISMAN").getItem()
+            SlimefunItem.getById("ENDER_LAVA_TALISMAN").getItem(), SlimefunItems.TALISMAN_LAVA, SlimefunItem.getById("ENDER_WARRIOR_TALISMAN").getItem(),
+            SlimefunItems.TALISMAN_WARRIOR, SlimefunItems.BOOSTED_URANIUM, SlimefunItems.TALISMAN_KNIGHT,
+            SlimefunItem.getById("ENDER_KNIGHT_TALISMAN").getItem(), SlimefunItems.TALISMAN_FIRE, SlimefunItem.getById("ENDER_FIRE_TALISMAN").getItem()
         };
 
         ItemStack[] torrentIdolRecipe = {
-            SlimefunItem.getById("ENDER_WATER_TALISMAN").getItem(), SlimefunItems.TALISMAN_WATER.item(), SlimefunItem.getById("ENDER_ANGEL_TALISMAN").getItem(),
-            SlimefunItems.TALISMAN_ANGEL.item(), SlimefunItems.BOOSTED_URANIUM.item(), SlimefunItems.TALISMAN_WHIRLWIND.item(),
-            SlimefunItem.getById("ENDER_WHIRLWIND_TALISMAN").getItem(), SlimefunItems.TALISMAN_TRAVELLER.item(), SlimefunItem.getById("ENDER_TRAVELLER_TALISMAN").getItem()
+            SlimefunItem.getById("ENDER_WATER_TALISMAN").getItem(), SlimefunItems.TALISMAN_WATER, SlimefunItem.getById("ENDER_ANGEL_TALISMAN").getItem(),
+            SlimefunItems.TALISMAN_ANGEL, SlimefunItems.BOOSTED_URANIUM, SlimefunItems.TALISMAN_WHIRLWIND,
+            SlimefunItem.getById("ENDER_WHIRLWIND_TALISMAN").getItem(), SlimefunItems.TALISMAN_TRAVELLER, SlimefunItem.getById("ENDER_TRAVELLER_TALISMAN").getItem()
         };
 
         ItemStack[] terranIdolRecipe = {
-            SlimefunItem.getById("ENDER_CAVEMAN_TALISMAN").getItem(), SlimefunItems.TALISMAN_CAVEMAN.item(), SlimefunItem.getById("ENDER_MINER_TALISMAN").getItem(),
-            SlimefunItems.TALISMAN_MINER.item(), SlimefunItems.BOOSTED_URANIUM.item(), SlimefunItems.TALISMAN_FARMER.item(),
-            SlimefunItem.getById("ENDER_FARMER_TALISMAN").getItem(), SlimefunItems.TALISMAN_HUNTER.item(), SlimefunItem.getById("ENDER_HUNTER_TALISMAN").getItem()
+            SlimefunItem.getById("ENDER_CAVEMAN_TALISMAN").getItem(), SlimefunItems.TALISMAN_CAVEMAN, SlimefunItem.getById("ENDER_MINER_TALISMAN").getItem(),
+            SlimefunItems.TALISMAN_MINER, SlimefunItems.BOOSTED_URANIUM, SlimefunItems.TALISMAN_FARMER,
+            SlimefunItem.getById("ENDER_FARMER_TALISMAN").getItem(), SlimefunItems.TALISMAN_HUNTER, SlimefunItem.getById("ENDER_HUNTER_TALISMAN").getItem()
         };
 
         ItemStack[] divineIdolRecipe = {
-            SlimefunItem.getById("ENDER_MAGICIAN_TALISMAN").getItem(), SlimefunItems.TALISMAN_MAGICIAN.item(), SlimefunItem.getById("ENDER_WIZARD_TALISMAN").getItem(),
-            SlimefunItems.TALISMAN_WIZARD.item(), SlimefunItems.BOOSTED_URANIUM.item(), SlimefunItems.TALISMAN_WISE.item(),
-            SlimefunItem.getById("ENDER_WISE_TALISMAN").getItem(), SlimefunItems.TALISMAN_ANVIL.item(), SlimefunItem.getById("ENDER_ANVIL_TALISMAN").getItem()
+            SlimefunItem.getById("ENDER_MAGICIAN_TALISMAN").getItem(), SlimefunItems.TALISMAN_MAGICIAN, SlimefunItem.getById("ENDER_WIZARD_TALISMAN").getItem(),
+            SlimefunItems.TALISMAN_WIZARD, SlimefunItems.BOOSTED_URANIUM, SlimefunItems.TALISMAN_WISE,
+            SlimefunItem.getById("ENDER_WISE_TALISMAN").getItem(), SlimefunItems.TALISMAN_ANVIL, SlimefunItem.getById("ENDER_ANVIL_TALISMAN").getItem()
         };
 
         ItemStack[] badOmenPotionRecipe = {
             null, new ItemStack(Material.FERMENTED_SPIDER_EYE), null,
-            new ItemStack(Material.POISONOUS_POTATO), SlimefunItems.MEDICINE.item(), new ItemStack(Material.GHAST_TEAR),
+            new ItemStack(Material.POISONOUS_POTATO), SlimefunItems.MEDICINE, new ItemStack(Material.GHAST_TEAR),
             null, new ItemStack(Material.NETHER_WART), null,
         };
 
@@ -1034,9 +1034,9 @@ public class Setup {
         SlimefunItem playerHopperItem = new PlayerHopper(group, playerHopper, RecipeType.MAGIC_WORKBENCH, playerHopperRecipe, 500, 5000);
         SlimefunItem supplyHopperItem = new SupplyHopper(group, supplyHopper, RecipeType.MAGIC_WORKBENCH, supplyHopperRecipe, 500, 5000);
         SlimefunItem stackDispenserItem = new StackDispenser(group, stackDispenser, RecipeType.MAGIC_WORKBENCH, stackDispenserRecipe);
-        SlimefunItem electricCableItem = new ElectricCable(group, electricCable, RecipeType.MAGIC_WORKBENCH, electricCableRecipe, IDOEUtility.output(electricCable.item(), 8), 200, 2000, 2.0, 0.5);
-        SlimefunItem electricCableItem2 = new ElectricCable(group, electricCable2, RecipeType.MAGIC_WORKBENCH, electricCable2Recipe, IDOEUtility.output(electricCable2.item(), 4), 300, 3000, 4.0, 1);
-        SlimefunItem electricCableItem3 = new ElectricCable(group, electricCable3, RecipeType.MAGIC_WORKBENCH, electricCable3Recipe, IDOEUtility.output(electricCable3.item(), 2), 400, 4000, 6.0, 2);
+        SlimefunItem electricCableItem = new ElectricCable(group, electricCable, RecipeType.MAGIC_WORKBENCH, electricCableRecipe, IDOEUtility.output(electricCable, 8), 200, 2000, 2.0, 0.5);
+        SlimefunItem electricCableItem2 = new ElectricCable(group, electricCable2, RecipeType.MAGIC_WORKBENCH, electricCable2Recipe, IDOEUtility.output(electricCable2, 4), 300, 3000, 4.0, 1);
+        SlimefunItem electricCableItem3 = new ElectricCable(group, electricCable3, RecipeType.MAGIC_WORKBENCH, electricCable3Recipe, IDOEUtility.output(electricCable3, 2), 400, 4000, 6.0, 2);
 
         SlimefunItem radiationabsorber = new RadiationAbsorber(group, radiationAbsorber, RecipeType.ENHANCED_CRAFTING_TABLE, radiationAbsorberRecipe, 250, 1600, 2);
         SlimefunItem radiationabsorber2 = new RadiationAbsorber(group, radiationAbsorber2, RecipeType.ENHANCED_CRAFTING_TABLE, radiationAbsorber2Recipe, 750, 3800, 4);
