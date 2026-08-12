@@ -32,10 +32,10 @@ import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
+
 /*
 A unique vessel designed for navigating lava lakes, allowing you to traverse molten environments efficiently.
  */
-
 public class LavaBoat extends SlimefunItem implements Listener {
 
     public LavaBoat(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
@@ -100,7 +100,7 @@ public class LavaBoat extends SlimefunItem implements Listener {
             Location loc = boat.getLocation();
 
             if (e.getTo().clone().subtract(0, 0.1, 0).getBlock().getType() == Material.WATER ||
-                e.getTo().clone().add(0,0.1,0).getBlock().getType() == Material.WATER) {
+                e.getTo().clone().add(0, 0.1, 0).getBlock().getType() == Material.WATER) {
                 boat.removeMetadata("lava_boat", IDreamOfEasy.getInstance());
                 boat.remove();
                 ItemStack sfItem = SlimefunItem.getById("IDOE_LAVABOAT").getItem();
@@ -122,33 +122,35 @@ public class LavaBoat extends SlimefunItem implements Listener {
 
     @EventHandler
     public void onCombust(EntityCombustEvent e) {
-        //Fireproof the LavaBoat item
-        SlimefunItem sfItem = SlimefunItem.getById("IDOE_LAVABOAT");
-        if (sfItem instanceof LavaBoat) {
-            e.setCancelled(true);
-        }
-
-        //Make sure player is only checked if driving a lava_boat
-        if (e.getEntity() instanceof Player p) {
-            if (p.isInsideVehicle() && p.getVehicle() instanceof Boat boat && boat.hasMetadata("lava_boat")) {
+        // Only protect an actual dropped Lava Boat item. The old implementation
+        // cancelled every combustion event because the registered Slimefun item
+        // itself always exists.
+        if (e.getEntity() instanceof Item item) {
+            SlimefunItem sfItem = SlimefunItem.getByItem(item.getItemStack());
+            if (sfItem instanceof LavaBoat) {
                 e.setCancelled(true);
-                p.setFireTicks(0);
-            } else {
-                e.setCancelled(false);
+                return;
             }
         }
 
-        //Check empty boat, as well as boat with passenger
+        // Protect players only while they are actually riding a Lava Boat.
+        if (e.getEntity() instanceof Player p
+            && p.isInsideVehicle()
+            && p.getVehicle() instanceof Boat boat
+            && boat.hasMetadata("lava_boat")) {
+            e.setCancelled(true);
+            p.setFireTicks(0);
+            return;
+        }
+
+        // Protect the Lava Boat entity and any player passengers.
         if (e.getEntity() instanceof Boat boat && boat.hasMetadata("lava_boat")) {
             e.setCancelled(true);
             boat.setFireTicks(0);
 
-            if (!boat.getPassengers().isEmpty()) {
-                for (Entity passenger : boat.getPassengers()) {
-                    if (passenger instanceof Player) {
-                        passenger.setFireTicks(0);
-                        e.setCancelled(true);
-                    }
+            for (Entity passenger : boat.getPassengers()) {
+                if (passenger instanceof Player) {
+                    passenger.setFireTicks(0);
                 }
             }
         }
