@@ -111,7 +111,7 @@ jobs:
 
       - name: Build IDreamOfEasy
         working-directory: idreamofeasy
-        run: mvn -B clean package
+        run: mvn -B clean package -Dmaven.compiler.showDeprecation=true
 
       - name: Stage direct IDreamOfEasy JAR
         id: output
