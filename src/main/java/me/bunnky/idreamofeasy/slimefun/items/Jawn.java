@@ -1,5 +1,6 @@
 package me.bunnky.idreamofeasy.slimefun.items;
 
+import com.xzavier0722.mc.plugin.slimefun4.storage.util.StorageCacheUtils;
 import io.github.thebusybiscuit.slimefun4.api.events.PlayerRightClickEvent;
 import io.github.thebusybiscuit.slimefun4.api.items.ItemGroup;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
@@ -10,7 +11,6 @@ import io.github.thebusybiscuit.slimefun4.implementation.Slimefun;
 import io.github.thebusybiscuit.slimefun4.implementation.items.SimpleSlimefunItem;
 import io.github.thebusybiscuit.slimefun4.libraries.dough.protection.Interaction;
 import me.bunnky.idreamofeasy.utils.IDOEUtility;
-import me.mrCookieSlime.Slimefun.api.BlockStorage;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -60,8 +60,8 @@ public class Jawn extends SimpleSlimefunItem<ItemUseHandler> {
         BlockBreakEvent breakEvent = new BlockBreakEvent(b, p);
         Bukkit.getPluginManager().callEvent(breakEvent);
         if (!breakEvent.isCancelled()) {
-            if (BlockStorage.hasBlockInfo(b)) {
-                BlockStorage.clearBlockInfo(b);
+            if (StorageCacheUtils.hasBlock(b.getLocation())) {
+                Slimefun.getDatabaseManager().getBlockDataController().removeBlock(b.getLocation());
                 b.setType(Material.AIR);
             } else {
                 b.breakNaturally();
