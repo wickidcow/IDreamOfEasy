@@ -1,5 +1,6 @@
 package me.bunnky.idreamofeasy.slimefun.machines;
 
+import com.xzavier0722.mc.plugin.slimefun4.storage.util.StorageCacheUtils;
 import io.github.thebusybiscuit.slimefun4.api.items.ItemGroup;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
@@ -11,7 +12,6 @@ import io.github.thebusybiscuit.slimefun4.implementation.handlers.VanillaInvento
 import io.github.thebusybiscuit.slimefun4.libraries.dough.protection.Interaction;
 import me.bunnky.idreamofeasy.IDreamOfEasy;
 import me.bunnky.idreamofeasy.utils.IDOEUtility;
-import me.mrCookieSlime.Slimefun.api.BlockStorage;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Block;
@@ -45,7 +45,7 @@ public class StackDispenser extends SlimefunItem {
             public void onPlayerPlace(@NotNull BlockPlaceEvent e) {
                 Player p = e.getPlayer();
                 Block b = e.getBlock();
-                BlockStorage.addBlockInfo(b, "owner", p.getUniqueId().toString());
+                StorageCacheUtils.setData(b.getLocation(), "owner", p.getUniqueId().toString());
             }
         };
     }
@@ -93,7 +93,7 @@ public class StackDispenser extends SlimefunItem {
 
     @ParametersAreNonnullByDefault
     private boolean hasPermission(Dispenser dispenser, Block target) {
-        String owner = BlockStorage.getLocationInfo(dispenser.getLocation(), "owner");
+        String owner = StorageCacheUtils.getData(dispenser.getLocation(), "owner");
 
         if (owner == null) {
             return true;
