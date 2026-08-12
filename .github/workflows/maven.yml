@@ -74,6 +74,18 @@ jobs:
           set -euo pipefail
           chmod +x gradlew
 
+          # services.gradle.org currently redirects wrapper downloads through
+          # GitHub releases. Use Gradle's direct CDN for the same signed
+          # distribution to avoid transient GitHub 503/truncated downloads.
+          WRAPPER_PROPS="gradle/wrapper/gradle-wrapper.properties"
+          DIST_FILE="$(awk -F/ '/^distributionUrl=/{print $NF}' "$WRAPPER_PROPS")"
+          if [ -z "$DIST_FILE" ]; then
+            echo 'Could not determine the Gradle wrapper distribution filename.'
+            exit 1
+          fi
+          sed -i "s#^distributionUrl=.*#distributionUrl=https\\://downloads.gradle.org/distributions/${DIST_FILE}#" "$WRAPPER_PROPS"
+          grep '^distributionUrl=' "$WRAPPER_PROPS"
+
           for attempt in 1 2 3; do
             echo "Slimefun Legacy publish attempt ${attempt}/3"
             if ./gradlew publishToMavenLocal -PprojectVersion=Legacy-SNAPSHOT -x test --no-daemon; then
