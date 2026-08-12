@@ -13,6 +13,7 @@ import io.github.thebusybiscuit.slimefun4.libraries.dough.protection.Interaction
 import me.bunnky.idreamofeasy.IDreamOfEasy;
 import me.bunnky.idreamofeasy.utils.IDOEUtility;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Block;
 import org.bukkit.block.Dispenser;
@@ -28,8 +29,8 @@ import java.util.UUID;
 /*
 A dispenser that automatically releases items in stacks, providing a more efficient way to distribute items.
  */
-
 public class StackDispenser extends SlimefunItem {
+
     public StackDispenser(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
         super(itemGroup, item, recipeType, recipe);
         IDOEUtility.setGlow(item);
@@ -53,53 +54,78 @@ public class StackDispenser extends SlimefunItem {
     @Nonnull
     private BlockDispenseHandler onBlockDispense() {
         return (e, dispenser, facedBlock, machine) -> {
-            if (!hasPermission(dispenser, facedBlock)) {
-                e.setCancelled(true);
+            // This machine owns the dispense operation. Letting vanilla dispense one
+            // item first made it impossible to reliably identify the source stack.
+            e.setCancelled(true);
+
+            if (!hasPermission(dispenser, facedBlock) || !dispenser.getInventory().getViewers().isEmpty()) {
                 return;
             }
 
-            Inventory inv = dispenser.getInventory();
-
-            if (!(inv.getViewers().isEmpty())) {
-                e.setCancelled(true);
+            // Keep the historical safety rule: do not consume a stack when the
+            // block directly in front of the dispenser is occupied.
+            if (!facedBlock.isEmpty()) {
                 return;
             }
 
-            Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(IDreamOfEasy.getInstance(), new Runnable() {
-                public void run() {
-                    for (ItemStack itemStack : inv.getContents()) {
-                        if (itemStack != null && itemStack.getAmount() > 0) {
-                            int maxStackSize = itemStack.getMaxStackSize();
-                            int amountToDispense = Math.min(itemStack.getAmount(), maxStackSize);
+            Location dispenserLocation = dispenser.getLocation();
+            Location dropLocation = facedBlock.getLocation().add(0.5, 0.5, 0.5);
 
-                            ItemStack stackToDispense = itemStack.clone();
-                            stackToDispense.setAmount(amountToDispense);
-
-                            if (facedBlock.isEmpty()) {
-                                dispenser.getWorld().dropItem(facedBlock.getLocation().add(0.5, 0.5, 0.5), stackToDispense);
-                            }
-
-                            itemStack.setAmount(itemStack.getAmount() - amountToDispense);
-                            if (inv.containsAtLeast(itemStack, 1)) {
-                                inv.removeItem(itemStack);
-                            }
-                            break;
-                        }
-                    }
-                }
-            }, 1);
+            Bukkit.getRegionScheduler().runDelayed(
+                IDreamOfEasy.getInstance(),
+                dispenserLocation,
+                ignored -> dispenseOneStack(dispenserLocation, dropLocation),
+                1L
+            );
         };
+    }
+
+    private void dispenseOneStack(Location dispenserLocation, Location dropLocation) {
+        Block block = dispenserLocation.getBlock();
+        if (!(block.getState() instanceof Dispenser currentDispenser)) {
+            return;
+        }
+
+        Inventory inventory = currentDispenser.getInventory();
+        if (!inventory.getViewers().isEmpty()) {
+            return;
+        }
+
+        for (int slot = 0; slot < inventory.getSize(); slot++) {
+            ItemStack stored = inventory.getItem(slot);
+            if (stored == null || stored.getType().isAir() || stored.getAmount() <= 0) {
+                continue;
+            }
+
+            int amount = Math.min(stored.getAmount(), stored.getMaxStackSize());
+            ItemStack output = stored.clone();
+            output.setAmount(amount);
+            currentDispenser.getWorld().dropItem(dropLocation, output);
+
+            int remaining = stored.getAmount() - amount;
+            if (remaining <= 0) {
+                inventory.setItem(slot, null);
+            } else {
+                stored.setAmount(remaining);
+                inventory.setItem(slot, stored);
+            }
+            return;
+        }
     }
 
     @ParametersAreNonnullByDefault
     private boolean hasPermission(Dispenser dispenser, Block target) {
         String owner = StorageCacheUtils.getData(dispenser.getLocation(), "owner");
-
         if (owner == null) {
             return true;
         }
 
-        OfflinePlayer player = Bukkit.getOfflinePlayer(UUID.fromString(owner));
-        return Slimefun.getProtectionManager().hasPermission(player, target, Interaction.PLACE_BLOCK);
+        try {
+            OfflinePlayer player = Bukkit.getOfflinePlayer(UUID.fromString(owner));
+            return Slimefun.getProtectionManager().hasPermission(player, target, Interaction.PLACE_BLOCK);
+        } catch (IllegalArgumentException ignored) {
+            // Invalid legacy owner data should fail closed rather than crash the event.
+            return false;
+        }
     }
 }
