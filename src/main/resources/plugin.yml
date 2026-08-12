@@ -5,5 +5,6 @@ main: me.bunnky.idreamofeasy.IDreamOfEasy
 website: https://github.com/wickidcow/IDreamOfEasy
 version: ${project.version}
 api-version: '1.21'
+folia-supported: true
 depend:
   - Slimefun
