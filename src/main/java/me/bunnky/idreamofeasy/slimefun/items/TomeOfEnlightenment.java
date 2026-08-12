@@ -38,7 +38,7 @@ public class TomeOfEnlightenment extends SimpleSlimefunItem<ItemUseHandler> {
                 }
 
                 Research randomResearch = unlockableResearches.get(random.nextInt(unlockableResearches.size()));
-                int cost = randomResearch.getCost();
+                int cost = randomResearch.getLevelCost();
 
                 if (profile.hasUnlocked(randomResearch)) {
                     return;
@@ -55,7 +55,7 @@ public class TomeOfEnlightenment extends SimpleSlimefunItem<ItemUseHandler> {
     private List<Research> getAffordableResearch(Player player, PlayerProfile profile) {
         List<Research> affordableResearches = new ArrayList<>();
         for (Research research : Slimefun.getRegistry().getResearches()) {
-            if (!research.isEnabled() || research.getCost() > player.getLevel()) {
+            if (!research.isEnabled() || research.getLevelCost() > player.getLevel()) {
                 continue;
             }
             if (!research.getAffectedItems().isEmpty() && research.canUnlock(player) &&
