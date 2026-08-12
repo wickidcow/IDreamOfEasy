@@ -10,6 +10,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
+import org.bukkit.inventory.RecipeChoice;
 import org.bukkit.inventory.SmokingRecipe;
 import org.jetbrains.annotations.NotNull;
 
@@ -27,13 +28,29 @@ public class ElectricSmoker extends AContainer implements NotHopperable, RecipeD
     protected void registerDefaultRecipes() {
         for (@NotNull Iterator<Recipe> it = Bukkit.recipeIterator(); it.hasNext(); ) {
             Recipe recipe = it.next();
-            if (recipe instanceof SmokingRecipe) {
-                SmokingRecipe smokingRecipe = (SmokingRecipe) recipe;
-                ItemStack input = smokingRecipe.getInput();
-                ItemStack result = smokingRecipe.getResult();
-                registerRecipe(10, new ItemStack[]{input}, new ItemStack[]{result});
+            if (recipe instanceof SmokingRecipe smokingRecipe) {
+                ItemStack input = representativeInput(smokingRecipe.getInputChoice());
+                if (input != null) {
+                    registerRecipe(10, new ItemStack[]{input}, new ItemStack[]{smokingRecipe.getResult()});
+                }
             }
         }
+    }
+
+    private ItemStack representativeInput(RecipeChoice choice) {
+        if (choice instanceof RecipeChoice.ExactChoice exactChoice && !exactChoice.getChoices().isEmpty()) {
+            return exactChoice.getChoices().getFirst().clone();
+        }
+
+        for (Material material : Material.values()) {
+            if (material.isItem() && material != Material.AIR) {
+                ItemStack candidate = new ItemStack(material);
+                if (choice.test(candidate)) {
+                    return candidate;
+                }
+            }
+        }
+        return null;
     }
 
     @Override
