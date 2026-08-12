@@ -1,9 +1,9 @@
 name: IDreamOfEasy
 author: Bunnky
-description: I Dream of Easy is a Slimefun Addon that implements workable community suggestions as well as other random tools and machines.
+description: I Dream of Easy - Slimefun Legacy maintenance fork for modern Paper servers.
 main: me.bunnky.idreamofeasy.IDreamOfEasy
-website: https://github.com/Bunnky/IDreamOfEasy
+website: https://github.com/wickidcow/IDreamOfEasy
 version: ${project.version}
-api-version: "1.20"
+api-version: '1.21'
 depend:
   - Slimefun
