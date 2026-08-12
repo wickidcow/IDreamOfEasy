@@ -1,5 +1,6 @@
 package me.bunnky.idreamofeasy.slimefun.machines;
 
+import com.xzavier0722.mc.plugin.slimefun4.storage.controller.ASlimefunDataContainer;
 import io.github.thebusybiscuit.slimefun4.api.items.ItemGroup;
 import io.github.thebusybiscuit.slimefun4.api.items.ItemSetting;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
@@ -13,9 +14,7 @@ import io.github.thebusybiscuit.slimefun4.implementation.handlers.VanillaInvento
 import io.github.thebusybiscuit.slimefun4.implementation.items.SimpleSlimefunItem;
 import io.github.thebusybiscuit.slimefun4.libraries.dough.protection.Interaction;
 import me.bunnky.idreamofeasy.utils.IDOEUtility;
-import me.mrCookieSlime.CSCoreLibPlugin.Configuration.Config;
 import me.mrCookieSlime.Slimefun.Objects.handlers.BlockTicker;
-import me.mrCookieSlime.Slimefun.api.BlockStorage;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -23,11 +22,12 @@ import org.bukkit.Particle;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.type.Hopper;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashMap;
-import java.util.List;
+import java.util.Collection;
+import java.util.Map;
 /*
 A convenient pickup point for players to collect items easily.
  */
@@ -54,9 +54,9 @@ public class SupplyHopper extends SimpleSlimefunItem<BlockTicker> implements Ene
     public @NotNull BlockTicker getItemHandler() {
         return new BlockTicker() {
             @Override
-            public void tick(Block b, SlimefunItem sfItem, Config config) {
+            public void tick(Block b, SlimefunItem sfItem, ASlimefunDataContainer data) {
                 if (b.getType() != Material.HOPPER) {
-                    BlockStorage.clearBlockInfo(b);
+                    Slimefun.getDatabaseManager().getBlockDataController().removeBlock(b.getLocation());
                     return;
                 }
 
@@ -67,63 +67,54 @@ public class SupplyHopper extends SimpleSlimefunItem<BlockTicker> implements Ene
                     }
                 }
 
+                org.bukkit.block.Hopper hopperState = (org.bukkit.block.Hopper) b.getState();
+                Inventory hopperInventory = hopperState.getInventory();
+                if (!hopperInventory.getViewers().isEmpty()) {
+                    return;
+                }
+
                 Location loc = b.getLocation();
+                Collection<Player> players = loc.getNearbyPlayers(2.0, 2.0, 2.0);
                 boolean playSound = false;
-                double xMin = -1;
-                double xMax = 1;
-                double yMin = -1.0;
-                double yMax = 0;
-                double zMin = -1;
-                double zMax = 1;
 
-                List<Player> players = (List<Player>) loc.getNearbyPlayers(xMax - xMin, yMax - yMin, zMax - zMin);
-
-                for (Player p : players) {
-                    if (!(Slimefun.getProtectionManager().hasPermission(p, b, Interaction.INTERACT_BLOCK)) || p.getGameMode() == GameMode.SPECTATOR) {
+                for (Player player : players) {
+                    if (!Slimefun.getProtectionManager().hasPermission(player, b, Interaction.INTERACT_BLOCK)
+                        || player.getGameMode() == GameMode.SPECTATOR) {
                         continue;
                     }
 
-                    Location ploc = p.getLocation();
+                    Location playerLocation = player.getLocation();
                     double blockCenterX = loc.getX() + 0.5;
                     double blockCenterY = loc.getY() - 1.7;
                     double blockCenterZ = loc.getZ() + 0.5;
 
+                    if (playerLocation.getX() < blockCenterX - 1 || playerLocation.getX() > blockCenterX + 1
+                        || playerLocation.getY() < blockCenterY - 1 || playerLocation.getY() > blockCenterY
+                        || playerLocation.getZ() < blockCenterZ - 1 || playerLocation.getZ() > blockCenterZ + 1) {
+                        continue;
+                    }
 
-                    if (ploc.getX() >= blockCenterX + xMin && ploc.getX() <= blockCenterX + xMax &&
-                        ploc.getY() >= blockCenterY + yMin && ploc.getY() <= blockCenterY + yMax &&
-                        ploc.getZ() >= blockCenterZ + zMin && ploc.getZ() <= blockCenterZ + zMax) {
-
-                        org.bukkit.block.Hopper h = (org.bukkit.block.Hopper) b.getState();
-                        ItemStack[] hItems = h.getInventory().getContents();
-
-                        if (!(h.getInventory().getViewers().isEmpty())){
+                    for (ItemStack item : hopperInventory.getContents()) {
+                        if (item == null || item.getType().isAir()) {
+                            continue;
+                        }
+                        if (getChargeLong(loc, data) < ecost) {
                             return;
                         }
 
-                        for (ItemStack item : hItems) {
-                            if (item != null && getCharge(loc) >= ecost) {
-                                int totalAmountToAdd = item.getAmount();
-                                HashMap<Integer, ItemStack> leftover = p.getInventory().addItem(item.clone());
+                        int originalAmount = item.getAmount();
+                        Map<Integer, ItemStack> leftover = player.getInventory().addItem(item.clone());
+                        int leftoverAmount = leftover.values().stream().mapToInt(ItemStack::getAmount).sum();
+                        int moved = originalAmount - leftoverAmount;
 
-                                if (leftover.isEmpty()) {
-                                    item.setAmount(0);
-                                    removeCharge(loc, ecost);
-                                    b.getWorld().spawnParticle(Particle.CRIT, b.getLocation().add(0.5, 0, 0.5), 10, 0.3, 0.3, 0.3, 0.05);
-                                    playSound = true;
-                                } else {
-                                    int excess = leftover.values().stream().mapToInt(ItemStack::getAmount).sum();
-                                    int toAdd = totalAmountToAdd - excess;
-
-                                    if (toAdd > 0) {
-                                        item.setAmount(item.getAmount() - toAdd);
-                                    }
-
-                                    if (item.getAmount() <= 0) {
-                                        h.getInventory().remove(item);
-                                    }
-                                }
-                            }
+                        if (moved <= 0) {
+                            continue;
                         }
+
+                        item.setAmount(originalAmount - moved);
+                        removeCharge(loc, (long) ecost, data);
+                        b.getWorld().spawnParticle(Particle.CRIT, b.getLocation().clone().add(0.5, 0, 0.5), 10, 0.3, 0.3, 0.3, 0.05);
+                        playSound = true;
                     }
                 }
 
@@ -145,7 +136,13 @@ public class SupplyHopper extends SimpleSlimefunItem<BlockTicker> implements Ene
     }
 
     @Override
+    public long getCapacityLong() {
+        return cap;
+    }
+
+    @SuppressWarnings("deprecation")
+    @Override
     public int getCapacity() {
-        return this.cap;
+        return cap;
     }
 }
