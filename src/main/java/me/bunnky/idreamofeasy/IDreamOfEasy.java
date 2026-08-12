@@ -25,7 +25,6 @@ public class IDreamOfEasy extends JavaPlugin implements SlimefunAddon {
         getLogger().info(" ┻  ┻┛┛┗┗┛┛┗┛ ┗  ┗┛┻   ┗┛┛┗┗┛┗┛ ");
         getLogger().info("        IDOE by Bunnky          ");
         getLogger().info(" Slimefun Legacy maintenance build for Paper 26.2 ");
-        getLogger().info(" GuizhanLibPlugin is not required by this fork. ");
 
         saveDefaultConfig();
         setupMetrics();
