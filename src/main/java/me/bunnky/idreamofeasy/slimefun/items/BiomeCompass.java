@@ -12,7 +12,6 @@ import io.github.thebusybiscuit.slimefun4.implementation.items.SimpleSlimefunIte
 import io.papermc.paper.registry.RegistryAccess;
 import io.papermc.paper.registry.RegistryKey;
 import me.bunnky.idreamofeasy.utils.IDOEUtility;
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -81,7 +80,7 @@ public class BiomeCompass extends SimpleSlimefunItem<ItemUseHandler> {
             }
 
             playerBiomeSelection.put(playerId, selectedBiomeIndex);
-            p.sendMessage("§eSelected biome: " + ChatColor.GOLD + getBiomeName(biomes.get(selectedBiomeIndex)));
+            p.sendMessage("§eSelected biome: §6" + getBiomeName(biomes.get(selectedBiomeIndex)));
             return;
         }
 
@@ -91,12 +90,12 @@ public class BiomeCompass extends SimpleSlimefunItem<ItemUseHandler> {
         if (closestBiomeLocation != null) {
             p.setCompassTarget(closestBiomeLocation);
             double distance = p.getLocation().distance(closestBiomeLocation);
-            p.sendMessage("§aFound " + ChatColor.GREEN + getBiomeName(selectedBiome) + " §abiome, "
-                + ChatColor.GREEN + (int) distance + " §ablocks away!");
+            p.sendMessage("§aFound §a" + getBiomeName(selectedBiome) + " §abiome, §a"
+                + (int) distance + " §ablocks away!");
             p.setCooldown(Material.COMPASS, COOLDOWN_TICKS);
             p.playSound(p, Sound.ENTITY_PLAYER_LEVELUP, SoundCategory.PLAYERS, 0.5F, 2F);
         } else {
-            p.sendMessage("§cNo " + ChatColor.DARK_RED + getBiomeName(selectedBiome) + " §cbiome nearby.");
+            p.sendMessage("§cNo §4" + getBiomeName(selectedBiome) + " §cbiome nearby.");
             p.setCooldown(Material.COMPASS, COOLDOWN_TICKS);
             p.playSound(p, Sound.BLOCK_ANVIL_LAND, SoundCategory.PLAYERS, 0.4F, 1F);
         }
