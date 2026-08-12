@@ -1,5 +1,6 @@
 package me.bunnky.idreamofeasy.slimefun.machines;
 
+import com.xzavier0722.mc.plugin.slimefun4.storage.controller.ASlimefunDataContainer;
 import io.github.thebusybiscuit.slimefun4.api.events.PlayerRightClickEvent;
 import io.github.thebusybiscuit.slimefun4.api.items.ItemGroup;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
@@ -8,17 +9,13 @@ import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.github.thebusybiscuit.slimefun4.core.attributes.EnergyNetComponent;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockUseHandler;
 import io.github.thebusybiscuit.slimefun4.core.networks.energy.EnergyNetComponentType;
-import me.bunnky.idreamofeasy.IDreamOfEasy;
-import me.mrCookieSlime.CSCoreLibPlugin.Configuration.Config;
 import me.mrCookieSlime.Slimefun.Objects.handlers.BlockTicker;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Sheep;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
@@ -39,39 +36,42 @@ public class ElectricShearer extends SlimefunItem implements EnergyNetComponent 
         addItemHandler(new BlockTicker() {
             @Override
             public boolean isSynchronized() {
-                return false;
+                return true;
             }
 
             @Override
-            public void tick(Block b, SlimefunItem sfItem, Config config) {
-                shearSheep(b.getLocation(), range);
+            public void tick(Block b, SlimefunItem sfItem, ASlimefunDataContainer data) {
+                Location loc = b.getLocation();
+                if (getChargeLong(loc, data) < ecost) {
+                    return;
+                }
+
+                if (shearSheep(loc, range)) {
+                    removeCharge(loc, (long) ecost, data);
+                }
             }
         });
     }
 
+    private boolean shearSheep(Location loc, int range) {
+        boolean shearedAny = false;
 
-    private void shearSheep(Location loc, int range) {
-        Bukkit.getScheduler().runTask(IDreamOfEasy.getInstance(), () -> {
-            for (Entity entity : loc.getNearbyEntities(range, range, range)) {
-                if (entity.getType() == EntityType.SHEEP) {
-                    if (entity.getLocation().distance(loc) <= range) {
-                        Sheep sheep = (Sheep) entity;
-                        if (!sheep.isSheared()) {
-                            sheep.setSheared(true);
-
-                            Material woolMaterial = Material.valueOf(sheep.getColor().name() + "_WOOL");
-                            ItemStack wool = new ItemStack(woolMaterial, 1);
-
-                            entity.getWorld().dropItemNaturally(entity.getLocation(), wool);
-
-                            Location sheepLocation = sheep.getLocation();
-                            sheep.getWorld().spawnParticle(Particle.CLOUD, sheepLocation, 20, 0.5, 0.5, 0.5, 0.1);
-                            sheep.getWorld().playSound(sheepLocation, Sound.ENTITY_SHEEP_SHEAR, 1.0F, 1.0F);
-                        }
-                    }
-                }
+        for (Entity entity : loc.getNearbyEntities(range, range, range)) {
+            if (!(entity instanceof Sheep sheep) || sheep.isSheared() || sheep.getLocation().distanceSquared(loc) > (double) range * range) {
+                continue;
             }
-        });
+
+            sheep.setSheared(true);
+            Material woolMaterial = Material.valueOf(sheep.getColor().name() + "_WOOL");
+            sheep.getWorld().dropItemNaturally(sheep.getLocation(), new ItemStack(woolMaterial));
+
+            Location sheepLocation = sheep.getLocation();
+            sheep.getWorld().spawnParticle(Particle.CLOUD, sheepLocation, 20, 0.5, 0.5, 0.5, 0.1);
+            sheep.getWorld().playSound(sheepLocation, Sound.ENTITY_SHEEP_SHEAR, 1.0F, 1.0F);
+            shearedAny = true;
+        }
+
+        return shearedAny;
     }
 
     public @Nonnull BlockUseHandler onRightClick() {
@@ -84,7 +84,13 @@ public class ElectricShearer extends SlimefunItem implements EnergyNetComponent 
     }
 
     @Override
+    public long getCapacityLong() {
+        return cap;
+    }
+
+    @SuppressWarnings("deprecation")
+    @Override
     public int getCapacity() {
-        return this.cap;
+        return cap;
     }
 }
