@@ -3,6 +3,8 @@ package me.bunnky.idreamofeasy.slimefun.items.idols;
 import io.github.thebusybiscuit.slimefun4.api.items.ItemGroup;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
 import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Material;
 import org.bukkit.Tag;
 import org.bukkit.enchantments.Enchantment;
@@ -14,6 +16,8 @@ import org.bukkit.event.enchantment.EnchantItemEvent;
 import org.bukkit.event.player.PlayerExpChangeEvent;
 import org.bukkit.event.player.PlayerItemDamageEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.Damageable;
+import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.Map;
 import java.util.Random;
@@ -75,14 +79,34 @@ public class DivineIdol extends Idol {
     public void onItemDamage(PlayerItemDamageEvent e) {
         Player p = e.getPlayer();
         ItemStack item = e.getItem();
+        ItemMeta itemMeta = item.getItemMeta();
 
-        if (random.nextDouble() < 0.20 && item.getDurability() >= item.getType().getMaxDurability() - 1) {
-            e.setCancelled(true);
-            item.setDurability((short) 0);
-            String displayName = item.hasItemMeta() && item.getItemMeta().hasDisplayName()
-                ? item.getItemMeta().getDisplayName()
-                : item.getType().name();
-            sendMessage(p, this.getItemName() + ": §r§aSaved " + displayName + "§r§a!");
+        if (!(itemMeta instanceof Damageable damageable)) {
+            return;
         }
+
+        if (random.nextDouble() < 0.20 && damageable.getDamage() >= item.getType().getMaxDurability() - 1) {
+            e.setCancelled(true);
+            damageable.setDamage(0);
+            item.setItemMeta(itemMeta);
+
+            Component displayName = itemMeta.displayName();
+            String name = displayName == null
+                ? humanizeMaterial(item.getType())
+                : PlainTextComponentSerializer.plainText().serialize(displayName);
+            sendMessage(p, this.getItemName() + ": §r§aSaved " + name + "§r§a!");
+        }
+    }
+
+    private String humanizeMaterial(Material material) {
+        String[] parts = material.name().toLowerCase().split("_");
+        StringBuilder result = new StringBuilder();
+        for (String part : parts) {
+            if (!result.isEmpty()) {
+                result.append(' ');
+            }
+            result.append(Character.toUpperCase(part.charAt(0))).append(part.substring(1));
+        }
+        return result.toString();
     }
 }
