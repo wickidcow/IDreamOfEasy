@@ -19,6 +19,6 @@ public class EndermanRepeller extends MobRepeller {
 
     @Override
     protected String getRepelledEntityName() {
-        return "末影人";
+        return "Enderman";
     }
 }

@@ -1,11 +1,11 @@
 package me.bunnky.idreamofeasy.slimefun.items;
 
+import io.github.bakedlibs.dough.chat.ChatInput;
 import io.github.thebusybiscuit.slimefun4.api.items.ItemGroup;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
 import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.github.thebusybiscuit.slimefun4.core.handlers.ItemUseHandler;
-import io.github.thebusybiscuit.slimefun4.libraries.dough.chat.ChatInput;
 import me.bunnky.idreamofeasy.IDreamOfEasy;
 import me.bunnky.idreamofeasy.utils.IDOEUtility;
 import org.bukkit.Bukkit;
@@ -42,22 +42,22 @@ public class AlarmClock extends SlimefunItem {
 
                 if (!alarmMode.get(playerId)) {
                     cancelAlarm(playerId);
-                    p.sendMessage("§c闹钟已禁用。");
+                    p.sendMessage("§cAlarm mode is now disabled.");
                 } else {
-                    p.sendMessage("§a闹钟已启用。");
+                    p.sendMessage("§aAlarm mode enabled.");
                 }
             } else {
-                p.sendMessage("§a输入秒数");
+                p.sendMessage("§aEnter timer length in seconds");
 
                 ChatInput.waitForPlayer(IDreamOfEasy.getInstance(), p, msg -> {
                     try {
                         long duration = Long.parseLong(msg) * 1000;
                         long endTime = System.currentTimeMillis() + duration;
                         playerTimers.put(playerId, endTime);
-                        p.sendMessage("§e定时器已设置为§f" + duration / 1000 + "§e秒。");
+                        p.sendMessage("§eTimer set for §f" + duration / 1000 + "§es.");
                         startTimer(p);
                     } catch (NumberFormatException ex) {
-                        p.sendMessage("§c无效的输入，请输入有效的数字。");
+                        p.sendMessage("§cInvalid input. Please enter a valid number in seconds.");
                     }
                 });
             }

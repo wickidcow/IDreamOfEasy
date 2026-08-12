@@ -19,6 +19,6 @@ public class ZombieRepeller extends MobRepeller {
 
     @Override
     protected String getRepelledEntityName() {
-        return "僵尸";
+        return "Zombie";
     }
 }

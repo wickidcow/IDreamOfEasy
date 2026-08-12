@@ -19,6 +19,6 @@ public class BatRepeller extends MobRepeller {
 
     @Override
     protected String getRepelledEntityName() {
-        return "蝙蝠";
+        return "Bat";
     }
 }
