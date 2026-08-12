@@ -1,10 +1,10 @@
 package me.bunnky.idreamofeasy.slimefun.machines.multiblock;
 
+import com.xzavier0722.mc.plugin.slimefun4.storage.util.StorageCacheUtils;
 import io.github.thebusybiscuit.slimefun4.api.items.ItemGroup;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
 import io.github.thebusybiscuit.slimefun4.implementation.items.multiblocks.miner.IndustrialMiner;
 import me.bunnky.idreamofeasy.utils.MaterialUtility;
-import me.mrCookieSlime.Slimefun.api.BlockStorage;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.inventory.ItemStack;
@@ -29,6 +29,6 @@ public class Terrabore extends IndustrialMiner {
     public boolean canMine(@NotNull Block b) {
         return b.getType().getHardness() >= 0 &&
             b.getType().isSolid() &&
-            !BlockStorage.hasBlockInfo(b);
+            !StorageCacheUtils.hasBlock(b.getLocation());
     }
 }
