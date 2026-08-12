@@ -1,5 +1,6 @@
 package me.bunnky.idreamofeasy.slimefun.items;
 
+import com.xzavier0722.mc.plugin.slimefun4.storage.util.StorageCacheUtils;
 import io.github.thebusybiscuit.slimefun4.api.items.ItemGroup;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
@@ -10,7 +11,6 @@ import io.github.thebusybiscuit.slimefun4.implementation.Slimefun;
 import io.github.thebusybiscuit.slimefun4.libraries.dough.protection.Interaction;
 import me.bunnky.idreamofeasy.utils.ChiselConverter;
 import me.bunnky.idreamofeasy.utils.IDOEUtility;
-import me.mrCookieSlime.Slimefun.api.BlockStorage;
 import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
@@ -42,7 +42,7 @@ public class Chisel extends SlimefunItem implements Rechargeable {
 
                 Material stoneCutterResult = ChiselConverter.convert(b.getType());
 
-                if (stoneCutterResult != b.getType() && removeItemCharge(e.getItem(), COST) && !BlockStorage.hasBlockInfo(b.getLocation())) {
+                if (stoneCutterResult != b.getType() && removeItemCharge(e.getItem(), COST) && !StorageCacheUtils.hasBlock(b.getLocation())) {
                     b.setType(stoneCutterResult);
 
                     b.getWorld().playSound(b.getLocation(), Sound.BLOCK_SNIFFER_EGG_PLOP, 0.5F, 5.0F);
