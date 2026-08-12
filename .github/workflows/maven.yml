@@ -44,21 +44,51 @@ jobs:
 
           python3 - <<'PY'
           from pathlib import Path
+          import re
 
-          bad = []
+          cjk_files = []
+          legacy_patterns = {
+              r'org\.bukkit\.scheduler\.BukkitRunnable': 'BukkitRunnable',
+              r'org\.bukkit\.scheduler\.BukkitTask': 'BukkitTask',
+              r'Bukkit\.getScheduler\s*\(': 'Bukkit global scheduler',
+              r'getServer\(\)\.getScheduler\s*\(': 'server Bukkit scheduler',
+              r'scheduleSyncDelayedTask\s*\(': 'legacy delayed scheduler',
+              r'\.runTaskTimer\s*\(': 'Bukkit runTaskTimer',
+              r'\.runTaskLater\s*\(': 'Bukkit runTaskLater',
+              r'AsyncPlayerChatEvent': 'deprecated legacy chat event',
+              r'me\.mrCookieSlime\.Slimefun\.api\.BlockStorage': 'legacy BlockStorage facade',
+              r'FixedMetadataValue': 'legacy Bukkit metadata marker',
+              r'CSCoreLibPlugin\.Configuration\.Config': 'legacy ticker Config',
+              r'\.getDurability\s*\(': 'legacy item durability API',
+              r'\.setDurability\s*\(': 'legacy item durability API',
+          }
+          violations = []
+
           for root in (Path('src/main/java'), Path('src/main/resources')):
               for path in root.rglob('*'):
                   if not path.is_file():
                       continue
                   text = path.read_text(encoding='utf-8', errors='ignore')
                   if any('\u3400' <= ch <= '\u9fff' for ch in text):
-                      bad.append(str(path))
+                      cjk_files.append(str(path))
 
-          if bad:
-              raise SystemExit('CJK-localized runtime text remains in: ' + ', '.join(bad))
+                  if path.suffix == '.java':
+                      for pattern, label in legacy_patterns.items():
+                          if re.search(pattern, text):
+                              violations.append(f'{path}: {label}')
+
+          if cjk_files:
+              raise SystemExit('CJK-localized runtime text remains in: ' + ', '.join(cjk_files))
+
+          if violations:
+              raise SystemExit('Legacy/Folia-hostile API use remains:\n' + '\n'.join(violations))
+
+          plugin_yml = Path('src/main/resources/plugin.yml').read_text(encoding='utf-8')
+          if not re.search(r'^folia-supported:\s*true\s*$', plugin_yml, re.MULTILINE):
+              raise SystemExit('plugin.yml must explicitly declare folia-supported: true')
           PY
 
-          echo 'Legacy source policy check passed.'
+          echo 'Legacy/Folia source policy check passed.'
 
       - name: Install latest Slimefun Legacy release into Maven local
         env:
