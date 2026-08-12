@@ -62,6 +62,14 @@ jobs:
               r'\.getDurability\s*\(': 'legacy item durability API',
               r'\.setDurability\s*\(': 'legacy item durability API',
           }
+          allowed_deprecation_suppression = {
+              'src/main/java/me/bunnky/idreamofeasy/slimefun/machines/ElectricCable.java',
+              'src/main/java/me/bunnky/idreamofeasy/slimefun/machines/ElectricShearer.java',
+              'src/main/java/me/bunnky/idreamofeasy/slimefun/machines/PlayerHopper.java',
+              'src/main/java/me/bunnky/idreamofeasy/slimefun/machines/RadiationAbsorber.java',
+              'src/main/java/me/bunnky/idreamofeasy/slimefun/machines/SupplyHopper.java',
+              'src/main/java/me/bunnky/idreamofeasy/slimefun/machines/repellers/MobRepeller.java',
+          }
           violations = []
 
           for root in (Path('src/main/java'), Path('src/main/resources')):
@@ -69,13 +77,18 @@ jobs:
                   if not path.is_file():
                       continue
                   text = path.read_text(encoding='utf-8', errors='ignore')
+                  path_name = str(path)
+
                   if any('\u3400' <= ch <= '\u9fff' for ch in text):
-                      cjk_files.append(str(path))
+                      cjk_files.append(path_name)
 
                   if path.suffix == '.java':
                       for pattern, label in legacy_patterns.items():
                           if re.search(pattern, text):
                               violations.append(f'{path}: {label}')
+
+                      if 'SuppressWarnings' in text and 'deprecation' in text and path_name not in allowed_deprecation_suppression:
+                          violations.append(f'{path}: unreviewed deprecation suppression')
 
           if cjk_files:
               raise SystemExit('CJK-localized runtime text remains in: ' + ', '.join(cjk_files))
@@ -143,7 +156,7 @@ jobs:
         working-directory: idreamofeasy
         run: mvn -B clean package -Dmaven.compiler.showDeprecation=true
 
-      - name: Stage direct IDreamOfEasy JAR
+      - name: Stage and validate direct IDreamOfEasy JAR
         id: output
         working-directory: idreamofeasy
         shell: bash
@@ -164,6 +177,21 @@ jobs:
             echo 'Unexpected Guizhan classes found in final JAR.'
             exit 1
           fi
+
+          if jar tf "$OUTPUT" | grep -q '^org/bstats/'; then
+            echo 'Unrelocated bStats classes found in final JAR.'
+            exit 1
+          fi
+
+          if ! jar tf "$OUTPUT" | grep -q '^me/bunnky/idreamofeasy/libs/bstats/'; then
+            echo 'Relocated bStats classes are missing from final JAR.'
+            exit 1
+          fi
+
+          PLUGIN_YML="$(unzip -p "$OUTPUT" plugin.yml)"
+          grep -q "^version: ${VERSION}$" <<< "$PLUGIN_YML"
+          grep -q '^folia-supported: true$' <<< "$PLUGIN_YML"
+          grep -q '^  - Slimefun$' <<< "$PLUGIN_YML"
 
           sha256sum "$OUTPUT"
 
@@ -191,11 +219,19 @@ jobs:
         run: |
           set -euo pipefail
           TAG="v${VERSION}"
+          NOTES_FILE="release-notes/${TAG}.md"
+          TITLE="IDreamOfEasy Legacy ${VERSION}"
 
           if gh release view "$TAG" >/dev/null 2>&1; then
             gh release upload "$TAG" "$JAR" --clobber
+            if [ -f "$NOTES_FILE" ]; then
+              gh release edit "$TAG" --title "$TITLE" --notes-file "$NOTES_FILE"
+            fi
+          elif [ -f "$NOTES_FILE" ]; then
+            gh release create "$TAG" "$JAR" --target "$GITHUB_SHA" \
+              --title "$TITLE" --notes-file "$NOTES_FILE"
           else
             gh release create "$TAG" "$JAR" --target "$GITHUB_SHA" \
-              --title "IDreamOfEasy Legacy ${VERSION}" \
+              --title "$TITLE" \
               --notes "Paper 26.2 / Slimefun Legacy compatibility build. GuizhanLibPlugin is not required. The attached ${NAME} is the direct server JAR."
           fi
