@@ -1,13 +1,14 @@
 package me.bunnky.idreamofeasy.slimefun.items;
 
+import com.xzavier0722.mc.plugin.slimefun4.storage.util.StorageCacheUtils;
 import io.github.thebusybiscuit.slimefun4.api.items.ItemGroup;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
 import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.github.thebusybiscuit.slimefun4.core.handlers.EntityInteractHandler;
 import io.github.thebusybiscuit.slimefun4.core.handlers.ToolUseHandler;
+import io.github.thebusybiscuit.slimefun4.implementation.Slimefun;
 import me.bunnky.idreamofeasy.utils.IDOEUtility;
-import me.mrCookieSlime.Slimefun.api.BlockStorage;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
@@ -93,8 +94,8 @@ public class WisterShears extends SlimefunItem {
                     Block b = w.getBlockAt(loc);
 
                     if (Tag.LEAVES.isTagged(b.getType()) || Tag.REPLACEABLE_BY_TREES.isTagged(b.getType())) {
-                        if (BlockStorage.hasBlockInfo(b)){
-                            BlockStorage.clearBlockInfo(b);
+                        if (StorageCacheUtils.hasBlock(b.getLocation())) {
+                            Slimefun.getDatabaseManager().getBlockDataController().removeBlock(b.getLocation());
                         }
                         b.breakNaturally(new ItemStack(Material.SHEARS));
                         w.spawnParticle(Particle.INSTANT_EFFECT, b.getLocation(), 2, 0.2, 0.2, 0.2, 0.1);
