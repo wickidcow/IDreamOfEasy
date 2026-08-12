@@ -29,7 +29,6 @@ import org.bukkit.event.vehicle.VehicleExitEvent;
 import org.bukkit.event.vehicle.VehicleMoveEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 import org.bukkit.util.Vector;
@@ -136,9 +135,6 @@ public class LavaBoat extends SlimefunItem implements Listener {
 
     @EventHandler
     public void onCombust(EntityCombustEvent e) {
-        // Only protect an actual dropped Lava Boat item. The old implementation
-        // cancelled every combustion event because the registered Slimefun item
-        // itself always exists.
         if (e.getEntity() instanceof Item item) {
             SlimefunItem sfItem = SlimefunItem.getByItem(item.getItemStack());
             if (sfItem instanceof LavaBoat) {
@@ -147,7 +143,6 @@ public class LavaBoat extends SlimefunItem implements Listener {
             }
         }
 
-        // Protect players only while they are actually riding a Lava Boat.
         if (e.getEntity() instanceof Player p
             && p.isInsideVehicle()
             && p.getVehicle() instanceof Boat boat
@@ -157,7 +152,6 @@ public class LavaBoat extends SlimefunItem implements Listener {
             return;
         }
 
-        // Protect the Lava Boat entity and any player passengers.
         if (e.getEntity() instanceof Boat boat && isLavaBoat(boat)) {
             e.setCancelled(true);
             boat.setFireTicks(0);
@@ -212,15 +206,15 @@ public class LavaBoat extends SlimefunItem implements Listener {
     @EventHandler
     public void onExit(@NotNull VehicleExitEvent e) {
         if (e.getVehicle() instanceof Boat boat && isLavaBoat(boat)) {
-            Location boatLocation = e.getVehicle().getLocation();
-            Location teleportLocation = boatLocation.clone().add(0, 1, 0);
-            e.getExited().teleport(teleportLocation);
-            new BukkitRunnable() {
-                @Override
-                public void run() {
-                    e.getExited().setFireTicks(0);
-                }
-            }.runTaskLater(IDreamOfEasy.getInstance().getJavaPlugin(), 1);
+            Entity exited = e.getExited();
+            Location teleportLocation = boat.getLocation().clone().add(0, 1, 0);
+            exited.teleport(teleportLocation);
+            exited.getScheduler().execute(
+                IDreamOfEasy.getInstance(),
+                () -> exited.setFireTicks(0),
+                null,
+                1L
+            );
         }
     }
 }
