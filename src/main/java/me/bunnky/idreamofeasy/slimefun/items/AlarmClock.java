@@ -5,34 +5,37 @@ import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
 import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.github.thebusybiscuit.slimefun4.core.handlers.ItemUseHandler;
+import io.papermc.paper.event.player.AsyncChatEvent;
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import me.bunnky.idreamofeasy.IDreamOfEasy;
 import me.bunnky.idreamofeasy.utils.IDOEUtility;
-import org.bukkit.Bukkit;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.AsyncPlayerChatEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.scheduler.BukkitRunnable;
 
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class AlarmClock extends SlimefunItem implements Listener {
 
-    private final HashMap<UUID, Long> playerTimers = new HashMap<>();
-    private final HashMap<UUID, Boolean> alarmMode = new HashMap<>();
-    private final HashMap<UUID, BukkitRunnable> alarmTasks = new HashMap<>();
-    private final Set<UUID> awaitingTimerInput = new HashSet<>();
+    private final Map<UUID, Long> playerTimers = new ConcurrentHashMap<>();
+    private final Map<UUID, Boolean> alarmMode = new ConcurrentHashMap<>();
+    private final Map<UUID, ScheduledTask> timerTasks = new ConcurrentHashMap<>();
+    private final Map<UUID, ScheduledTask> alarmTasks = new ConcurrentHashMap<>();
+    private final Set<UUID> awaitingTimerInput = ConcurrentHashMap.newKeySet();
 
     public AlarmClock(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
         super(itemGroup, item, recipeType, recipe);
         IDOEUtility.setGlow(item);
-        Bukkit.getPluginManager().registerEvents(this, IDreamOfEasy.getInstance());
+        IDreamOfEasy.getInstance().getServer().getPluginManager().registerEvents(this, IDreamOfEasy.getInstance());
         addItemHandler(onUse());
     }
 
@@ -60,17 +63,22 @@ public class AlarmClock extends SlimefunItem implements Listener {
         };
     }
 
-    @SuppressWarnings("deprecation")
     @EventHandler(priority = EventPriority.LOWEST)
-    public void onTimerInput(AsyncPlayerChatEvent event) {
-        UUID playerId = event.getPlayer().getUniqueId();
+    public void onTimerInput(AsyncChatEvent event) {
+        Player player = event.getPlayer();
+        UUID playerId = player.getUniqueId();
         if (!awaitingTimerInput.remove(playerId)) {
             return;
         }
 
         event.setCancelled(true);
-        String message = event.getMessage().trim();
-        Bukkit.getScheduler().runTask(IDreamOfEasy.getInstance(), () -> handleTimerInput(event.getPlayer(), message));
+        String message = PlainTextComponentSerializer.plainText().serialize(event.message()).trim();
+        player.getScheduler().execute(
+            IDreamOfEasy.getInstance(),
+            () -> handleTimerInput(player, message),
+            null,
+            1L
+        );
     }
 
     private void handleTimerInput(Player player, String message) {
@@ -88,7 +96,9 @@ public class AlarmClock extends SlimefunItem implements Listener {
 
             long duration = Math.multiplyExact(seconds, 1000L);
             long endTime = Math.addExact(System.currentTimeMillis(), duration);
-            playerTimers.put(player.getUniqueId(), endTime);
+            UUID playerId = player.getUniqueId();
+            cancelTimerTask(playerId);
+            playerTimers.put(playerId, endTime);
             player.sendMessage("§eTimer set for §f" + seconds + "§es.");
             startTimer(player);
         } catch (NumberFormatException | ArithmeticException ex) {
@@ -98,68 +108,119 @@ public class AlarmClock extends SlimefunItem implements Listener {
 
     private void startTimer(Player player) {
         UUID playerId = player.getUniqueId();
+        cancelTimerTask(playerId);
 
-        new BukkitRunnable() {
-            @Override
-            public void run() {
+        ScheduledTask task = player.getScheduler().runAtFixedRate(
+            IDreamOfEasy.getInstance(),
+            scheduledTask -> {
                 Long endTime = playerTimers.get(playerId);
                 if (endTime == null) {
-                    cancel();
+                    scheduledTask.cancel();
+                    timerTasks.remove(playerId, scheduledTask);
                     return;
                 }
 
-                long remainingTime = endTime - System.currentTimeMillis();
-                if (remainingTime <= 0) {
-                    ring(player);
+                if (System.currentTimeMillis() >= endTime) {
                     playerTimers.remove(playerId);
-                    cancel();
+                    scheduledTask.cancel();
+                    timerTasks.remove(playerId, scheduledTask);
+                    ring(player);
                     player.sendMessage("§eTime's up!");
 
                     if (alarmMode.getOrDefault(playerId, false)) {
-                        startAlarmTask(playerId);
+                        startAlarmTask(player);
                     }
                 }
-            }
-        }.runTaskTimer(IDreamOfEasy.getInstance(), 0L, 1L);
+            },
+            null,
+            1L,
+            20L
+        );
+
+        if (task != null) {
+            timerTasks.put(playerId, task);
+        }
     }
 
-    private void startAlarmTask(UUID playerId) {
-        BukkitRunnable previous = alarmTasks.remove(playerId);
-        if (previous != null) {
-            previous.cancel();
-        }
+    private void startAlarmTask(Player player) {
+        UUID playerId = player.getUniqueId();
+        cancelAlarm(playerId);
 
-        BukkitRunnable alarmTask = new BukkitRunnable() {
-            @Override
-            public void run() {
+        ScheduledTask task = player.getScheduler().runAtFixedRate(
+            IDreamOfEasy.getInstance(),
+            scheduledTask -> {
                 if (!alarmMode.getOrDefault(playerId, false)) {
-                    cancel();
-                    alarmTasks.remove(playerId);
+                    scheduledTask.cancel();
+                    alarmTasks.remove(playerId, scheduledTask);
                     return;
                 }
+                ring(player);
+            },
+            null,
+            1L,
+            10L
+        );
 
-                Player player = Bukkit.getPlayer(playerId);
-                if (player != null && player.isOnline()) {
-                    ring(player);
-                }
-            }
-        };
-        alarmTask.runTaskTimer(IDreamOfEasy.getInstance(), 0L, 10L);
-        alarmTasks.put(playerId, alarmTask);
+        if (task != null) {
+            alarmTasks.put(playerId, task);
+        }
     }
 
     private void ring(Player player) {
         player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BELL, 1.0f, 2.0f);
-        Bukkit.getScheduler().runTaskLater(IDreamOfEasy.getInstance(),
-            () -> player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BELL, 1.0f, 1.5f), 2L);
-        Bukkit.getScheduler().runTaskLater(IDreamOfEasy.getInstance(),
-            () -> player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BELL, 1.0f, 1.0f), 4L);
+        player.getScheduler().runDelayed(
+            IDreamOfEasy.getInstance(),
+            ignored -> player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BELL, 1.0f, 1.5f),
+            null,
+            2L
+        );
+        player.getScheduler().runDelayed(
+            IDreamOfEasy.getInstance(),
+            ignored -> player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BELL, 1.0f, 1.0f),
+            null,
+            4L
+        );
+    }
+
+    private void cancelTimerTask(UUID playerId) {
+        ScheduledTask task = timerTasks.remove(playerId);
+        if (task != null) {
+            task.cancel();
+        }
     }
 
     private void cancelAlarm(UUID playerId) {
-        BukkitRunnable task = alarmTasks.remove(playerId);
+        ScheduledTask task = alarmTasks.remove(playerId);
         if (task != null) {
             task.cancel();
+        }
+    }
+
+    @EventHandler
+    public void onPlayerQuit(PlayerQuitEvent event) {
+        UUID playerId = event.getPlayer().getUniqueId();
+        awaitingTimerInput.remove(playerId);
+        cancelTimerTask(playerId);
+        cancelAlarm(playerId);
+    }
+
+    @EventHandler
+    public void onPlayerJoin(PlayerJoinEvent event) {
+        Player player = event.getPlayer();
+        Long endTime = playerTimers.get(player.getUniqueId());
+        if (endTime == null) {
+            return;
+        }
+
+        if (System.currentTimeMillis() >= endTime) {
+            playerTimers.remove(player.getUniqueId());
+            ring(player);
+            player.sendMessage("§eTime's up!");
+            if (alarmMode.getOrDefault(player.getUniqueId(), false)) {
+                startAlarmTask(player);
+            }
+        } else {
+            startTimer(player);
         }
     }
 }
