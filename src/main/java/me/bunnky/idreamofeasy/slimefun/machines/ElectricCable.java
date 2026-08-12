@@ -1,5 +1,7 @@
 package me.bunnky.idreamofeasy.slimefun.machines;
 
+import com.xzavier0722.mc.plugin.slimefun4.storage.controller.ASlimefunDataContainer;
+import com.xzavier0722.mc.plugin.slimefun4.storage.util.StorageCacheUtils;
 import io.github.thebusybiscuit.slimefun4.api.items.ItemGroup;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
@@ -7,16 +9,11 @@ import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.github.thebusybiscuit.slimefun4.core.attributes.EnergyNetComponent;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockPlaceHandler;
 import io.github.thebusybiscuit.slimefun4.core.networks.energy.EnergyNetComponentType;
-import me.bunnky.idreamofeasy.IDreamOfEasy;
-import me.mrCookieSlime.CSCoreLibPlugin.Configuration.Config;
 import me.mrCookieSlime.Slimefun.Objects.handlers.BlockTicker;
-import me.mrCookieSlime.Slimefun.api.BlockStorage;
-import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
-import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Damageable;
 import org.bukkit.entity.Entity;
@@ -50,19 +47,19 @@ public class ElectricCable extends SlimefunItem implements EnergyNetComponent {
         addItemHandler(new BlockTicker() {
             @Override
             public boolean isSynchronized() {
-                return false;
+                return true;
             }
 
             @Override
-            public void tick(Block b, SlimefunItem sfItem, Config config) {
+            public void tick(Block b, SlimefunItem sfItem, ASlimefunDataContainer data) {
                 Location loc = b.getLocation();
-                World w = loc.getWorld();
 
-                if (w == null || getCharge(loc) < ecost) {
+                if (getChargeLong(loc, data) < ecost) {
                     return;
                 }
-                removeCharge(loc, ecost);
-                nearbyEntities(loc);
+
+                removeCharge(loc, (long) ecost, data);
+                nearbyEntities(loc, data.getData("owner"));
             }
         });
     }
@@ -72,59 +69,52 @@ public class ElectricCable extends SlimefunItem implements EnergyNetComponent {
         return new BlockPlaceHandler(false) {
             @Override
             public void onPlayerPlace(@NotNull BlockPlaceEvent e) {
-                Player p = e.getPlayer();
-                Block b = e.getBlock();
-                BlockStorage.addBlockInfo(b, "owner", p.getUniqueId().toString());
+                StorageCacheUtils.setData(e.getBlock().getLocation(), "owner", e.getPlayer().getUniqueId().toString());
             }
         };
     }
 
-    private void nearbyEntities(Location loc) {
-        Bukkit.getScheduler().runTask(IDreamOfEasy.getInstance(), () -> {
-            String ownerUUID = BlockStorage.getLocationInfo(loc, "owner");
+    private void nearbyEntities(Location loc, String ownerUUID) {
+        double minX = loc.getBlockX() - range;
+        double maxX = loc.getBlockX() + range;
+        double minY = loc.getBlockY() - 1;
+        double maxY = loc.getBlockY() + 1;
+        double minZ = loc.getBlockZ() - range;
+        double maxZ = loc.getBlockZ() + range;
+        BoundingBox cableBox = new BoundingBox(minX, minY, minZ, maxX, maxY, maxZ);
 
-            double minX = loc.getBlockX() - range;
-            double maxX = loc.getBlockX() + range;
-            double minY = loc.getBlockY() - 1;
-            double maxY = loc.getBlockY() + 1;
-            double minZ = loc.getBlockZ() - range;
-            double maxZ = loc.getBlockZ() + range;
+        for (Entity entity : loc.getNearbyEntities(range, range, range)) {
+            if (!entity.getBoundingBox().overlaps(cableBox) || entity.getType() == EntityType.ITEM) {
+                continue;
+            }
 
-            for (Entity entity : loc.getNearbyEntities(range, range, range)) {
-                if (entity.getBoundingBox().overlaps(new BoundingBox(minX, minY, minZ, maxX, maxY, maxZ))) {
-                    if (entity.getType() == EntityType.ITEM) {
-                        continue;
-                    }
-                    if (entity instanceof Player p) {
-                        if (p.getGameMode() == GameMode.SURVIVAL) {
-                            if (ownerUUID != null && p.getUniqueId().toString().equals(ownerUUID)) {
-                                continue;
-                            }
-                            damage(loc, p);
-                        }
-                    } else {
-                        damage(loc, entity);
-                    }
+            if (entity instanceof Player player) {
+                if (player.getGameMode() != GameMode.SURVIVAL) {
+                    continue;
+                }
+                if (ownerUUID != null && player.getUniqueId().toString().equals(ownerUUID)) {
+                    continue;
                 }
             }
-        });
+
+            damage(loc, entity);
+        }
     }
 
-
     private void damage(Location loc, Entity entity) {
-        if (getCharge(loc) >= ecost) {
-            if (entity instanceof Damageable damageable) {
-                damageable.damage(damageAmount);
-            }
-
-            Vector dir = entity.getLocation().toVector().subtract(loc.toVector()).normalize();
-            dir.multiply(knockbackStrength);
-            dir.setY(0.3);
-            entity.setVelocity(dir);
-
-            loc.getWorld().playSound(loc, Sound.ENTITY_ARROW_HIT, 0.5F, 5.0F);
-            loc.getWorld().spawnParticle(Particle.ELECTRIC_SPARK, loc.add(0.5, 0.5, 0.5), 10, 0.3, 0.3, 0.3, 0.1);
+        if (entity instanceof Damageable damageable) {
+            damageable.damage(damageAmount);
         }
+
+        Vector dir = entity.getLocation().toVector().subtract(loc.toVector());
+        if (dir.lengthSquared() > 0) {
+            dir.normalize().multiply(knockbackStrength);
+        }
+        dir.setY(0.3);
+        entity.setVelocity(dir);
+
+        loc.getWorld().playSound(loc, Sound.ENTITY_ARROW_HIT, 0.5F, 5.0F);
+        loc.getWorld().spawnParticle(Particle.ELECTRIC_SPARK, loc.clone().add(0.5, 0.5, 0.5), 10, 0.3, 0.3, 0.3, 0.1);
     }
 
     @Override
@@ -133,7 +123,13 @@ public class ElectricCable extends SlimefunItem implements EnergyNetComponent {
     }
 
     @Override
+    public long getCapacityLong() {
+        return cap;
+    }
+
+    @SuppressWarnings("deprecation")
+    @Override
     public int getCapacity() {
-        return this.cap;
+        return cap;
     }
 }
