@@ -7,16 +7,18 @@ import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.github.thebusybiscuit.slimefun4.core.handlers.ItemUseHandler;
 import me.bunnky.idreamofeasy.IDreamOfEasy;
 import me.bunnky.idreamofeasy.utils.IDOEUtility;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.World;
 import org.bukkit.entity.Boat;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.boat.DarkOakBoat;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityCombustEvent;
@@ -26,7 +28,7 @@ import org.bukkit.event.vehicle.VehicleDestroyEvent;
 import org.bukkit.event.vehicle.VehicleExitEvent;
 import org.bukkit.event.vehicle.VehicleMoveEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.metadata.FixedMetadataValue;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
@@ -38,8 +40,12 @@ A unique vessel designed for navigating lava lakes, allowing you to traverse mol
  */
 public class LavaBoat extends SlimefunItem implements Listener {
 
+    private final NamespacedKey lavaBoatKey;
+
     public LavaBoat(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
         super(itemGroup, item, recipeType, recipe);
+        this.lavaBoatKey = new NamespacedKey(IDreamOfEasy.getInstance(), "lava_boat");
+
         IDreamOfEasy.getInstance().getJavaPlugin().getServer().getPluginManager().registerEvents(this, IDreamOfEasy.getInstance());
         IDOEUtility.setGlow(item);
 
@@ -60,32 +66,39 @@ public class LavaBoat extends SlimefunItem implements Listener {
     }
 
     public void spawnLavaBoat(Player p) {
-        Boat boat = p.getWorld().spawn(p.getLocation(), Boat.class);
-        boat.setBoatType(Boat.Type.DARK_OAK);
+        DarkOakBoat boat = p.getWorld().spawn(p.getLocation(), DarkOakBoat.class);
         boat.setGlowing(true);
-        boat.setMetadata("lava_boat", new FixedMetadataValue(IDreamOfEasy.getInstance(), true));
+        boat.getPersistentDataContainer().set(lavaBoatKey, PersistentDataType.BYTE, (byte) 1);
 
         Scoreboard sb = Bukkit.getScoreboardManager().getMainScoreboard();
         Team team = sb.getTeam("LavaBoats");
 
         if (team == null) {
             team = sb.registerNewTeam("LavaBoats");
-            team.setColor(ChatColor.DARK_RED);
+            team.color(NamedTextColor.DARK_RED);
         }
 
         team.addEntry(boat.getUniqueId().toString());
         boat.setFireTicks(0);
     }
 
+    private boolean isLavaBoat(Boat boat) {
+        return boat.getPersistentDataContainer().has(lavaBoatKey, PersistentDataType.BYTE);
+    }
+
+    private void clearLavaBoatMarker(Boat boat) {
+        boat.getPersistentDataContainer().remove(lavaBoatKey);
+    }
+
     @EventHandler
     public void onBoatDestroy(@NotNull VehicleDestroyEvent e) {
-        if (e.getVehicle() instanceof Boat boat && boat.hasMetadata("lava_boat")) {
+        if (e.getVehicle() instanceof Boat boat && isLavaBoat(boat)) {
             if (!(e.getAttacker() instanceof Player)) {
                 e.setCancelled(true);
                 return;
             }
             e.setCancelled(true);
-            boat.removeMetadata("lava_boat", IDreamOfEasy.getInstance());
+            clearLavaBoatMarker(boat);
             boat.remove();
 
             ItemStack sfItem = SlimefunItem.getById("IDOE_LAVABOAT").getItem();
@@ -95,16 +108,17 @@ public class LavaBoat extends SlimefunItem implements Listener {
 
     @EventHandler
     public void onMove(@NotNull VehicleMoveEvent e) {
-        if (e.getVehicle() instanceof Boat boat && boat.hasMetadata("lava_boat")) {
+        if (e.getVehicle() instanceof Boat boat && isLavaBoat(boat)) {
             World w = boat.getWorld();
             Location loc = boat.getLocation();
 
             if (e.getTo().clone().subtract(0, 0.1, 0).getBlock().getType() == Material.WATER ||
                 e.getTo().clone().add(0, 0.1, 0).getBlock().getType() == Material.WATER) {
-                boat.removeMetadata("lava_boat", IDreamOfEasy.getInstance());
+                clearLavaBoatMarker(boat);
                 boat.remove();
                 ItemStack sfItem = SlimefunItem.getById("IDOE_LAVABOAT").getItem();
                 boat.getWorld().dropItem(boat.getLocation(), sfItem);
+                return;
             }
 
             if (e.getTo().clone().subtract(0, 0.1, 0).getBlock().getType() == Material.LAVA) {
@@ -137,14 +151,14 @@ public class LavaBoat extends SlimefunItem implements Listener {
         if (e.getEntity() instanceof Player p
             && p.isInsideVehicle()
             && p.getVehicle() instanceof Boat boat
-            && boat.hasMetadata("lava_boat")) {
+            && isLavaBoat(boat)) {
             e.setCancelled(true);
             p.setFireTicks(0);
             return;
         }
 
         // Protect the Lava Boat entity and any player passengers.
-        if (e.getEntity() instanceof Boat boat && boat.hasMetadata("lava_boat")) {
+        if (e.getEntity() instanceof Boat boat && isLavaBoat(boat)) {
             e.setCancelled(true);
             boat.setFireTicks(0);
 
@@ -158,7 +172,7 @@ public class LavaBoat extends SlimefunItem implements Listener {
 
     @EventHandler
     public void onVehicleDamage(@NotNull VehicleDamageEvent e) {
-        if (e.getVehicle() instanceof Boat boat && boat.hasMetadata("lava_boat")) {
+        if (e.getVehicle() instanceof Boat boat && isLavaBoat(boat)) {
             if (!(e.getAttacker() instanceof Player)) {
                 e.setCancelled(true);
                 e.getVehicle().setFireTicks(0);
@@ -178,14 +192,14 @@ public class LavaBoat extends SlimefunItem implements Listener {
         }
 
         if (e.getEntity() instanceof Player p) {
-            if (p.getVehicle() instanceof Boat boat && boat.hasMetadata("lava_boat")) {
+            if (p.getVehicle() instanceof Boat boat && isLavaBoat(boat)) {
                 if (e.getCause() == EntityDamageEvent.DamageCause.LAVA) {
                     e.setCancelled(true);
                     p.setFireTicks(0);
                 }
             }
 
-            if (p.isInsideVehicle() && p.getVehicle() instanceof Boat boat && boat.hasMetadata("lava_boat")) {
+            if (p.isInsideVehicle() && p.getVehicle() instanceof Boat boat && isLavaBoat(boat)) {
                 if (e.getCause() == EntityDamageEvent.DamageCause.LAVA ||
                     e.getCause() == EntityDamageEvent.DamageCause.FIRE_TICK) {
                     e.setCancelled(true);
@@ -197,7 +211,7 @@ public class LavaBoat extends SlimefunItem implements Listener {
 
     @EventHandler
     public void onExit(@NotNull VehicleExitEvent e) {
-        if (e.getVehicle() instanceof Boat boat && boat.hasMetadata("lava_boat")) {
+        if (e.getVehicle() instanceof Boat boat && isLavaBoat(boat)) {
             Location boatLocation = e.getVehicle().getLocation();
             Location teleportLocation = boatLocation.clone().add(0, 1, 0);
             e.getExited().teleport(teleportLocation);
