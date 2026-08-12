@@ -1,24 +1,150 @@
-name: Java CI
+name: Build IDreamOfEasy 26.2 / Slimefun Legacy
 
 on:
   push:
-    branches:
-      - master
+    branches: [master]
   pull_request:
-    branches:
-      - master
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sf-idreamofeasy-build-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
-    if: startsWith(github.event.head_commit.message, '[CI skip]') == false
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
-      - name: Set up JDK
-        uses: actions/setup-java@v4
+      - name: Checkout IDreamOfEasy
+        uses: actions/checkout@v5
+        with:
+          path: idreamofeasy
+
+      - name: Checkout Slimefun Legacy
+        uses: actions/checkout@v5
+        with:
+          repository: wickidcow/Slimefun-Legacy
+          ref: master
+          path: slimefun-legacy
+
+      - name: Set up Java 25
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
-          java-version: ${{ vars.BUILDS_JAVA_VERSION }}
-          cache: 'maven'
-      - name: Build with Maven
-        run: mvn package --file pom.xml
+          java-version: '25'
+          cache: maven
+
+      - name: Verify Legacy fork source policy
+        working-directory: idreamofeasy
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if grep -R --line-number -E 'net\.guizhanss|GuizhanLibPlugin|GuizhanUpdater|鬼斩' pom.xml src/main/java src/main/resources; then
+            echo 'GuizhanLib or Gugu-only runtime code is still present.'
+            exit 1
+          fi
+
+          python3 - <<'PY'
+          from pathlib import Path
+
+          bad = []
+          for root in (Path('src/main/java'), Path('src/main/resources')):
+              for path in root.rglob('*'):
+                  if not path.is_file():
+                      continue
+                  text = path.read_text(encoding='utf-8', errors='ignore')
+                  if any('\u3400' <= ch <= '\u9fff' for ch in text):
+                      bad.append(str(path))
+
+          if bad:
+              raise SystemExit('CJK-localized runtime text remains in: ' + ', '.join(bad))
+          PY
+
+          echo 'Legacy source policy check passed.'
+
+      - name: Publish current Slimefun Legacy API to Maven local
+        working-directory: slimefun-legacy
+        shell: bash
+        run: |
+          set -euo pipefail
+          chmod +x gradlew
+
+          for attempt in 1 2 3; do
+            echo "Slimefun Legacy publish attempt ${attempt}/3"
+            if ./gradlew publishToMavenLocal -PprojectVersion=Legacy-SNAPSHOT -x test --no-daemon; then
+              exit 0
+            fi
+
+            if [ "$attempt" -eq 3 ]; then
+              echo 'Slimefun Legacy dependency publish failed after 3 attempts.'
+              exit 1
+            fi
+
+            sleep $((attempt * 10))
+          done
+
+      - name: Build IDreamOfEasy
+        working-directory: idreamofeasy
+        run: mvn -B clean package
+
+      - name: Stage direct IDreamOfEasy JAR
+        id: output
+        working-directory: idreamofeasy
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION="$(mvn -q -DforceStdout help:evaluate -Dexpression=project.version)"
+          NAME="SF_IDreamOfEasy_Legacy_v${VERSION}.jar"
+          SOURCE="target/${NAME}"
+          OUTPUT="dist/${NAME}"
+
+          test -f "$SOURCE"
+          mkdir -p dist
+          cp "$SOURCE" "$OUTPUT"
+          test -s "$OUTPUT"
+          jar tf "$OUTPUT" >/dev/null
+
+          if jar tf "$OUTPUT" | grep -qi 'guizhan'; then
+            echo 'Unexpected Guizhan classes found in final JAR.'
+            exit 1
+          fi
+
+          sha256sum "$OUTPUT"
+
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "jar=$OUTPUT" >> "$GITHUB_OUTPUT"
+          echo "name=$NAME" >> "$GITHUB_OUTPUT"
+
+      - name: Upload direct JAR build output
+        uses: actions/upload-artifact@v7
+        with:
+          path: idreamofeasy/${{ steps.output.outputs.jar }}
+          archive: false
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Publish direct JAR release asset
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+        working-directory: idreamofeasy
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.output.outputs.version }}
+          JAR: ${{ steps.output.outputs.jar }}
+          NAME: ${{ steps.output.outputs.name }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          TAG="v${VERSION}"
+
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" "$JAR" --clobber
+          else
+            gh release create "$TAG" "$JAR" --target "$GITHUB_SHA" \
+              --title "IDreamOfEasy Legacy ${VERSION}" \
+              --notes "Paper 26.2 / Slimefun Legacy compatibility build. GuizhanLibPlugin is not required. The attached ${NAME} is the direct server JAR."
+          fi

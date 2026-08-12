@@ -19,6 +19,6 @@ public class SpiderRepeller extends MobRepeller {
 
     @Override
     protected String getRepelledEntityName() {
-        return "蜘蛛";
+        return "Spider";
     }
 }

@@ -36,7 +36,7 @@ public class FlameheartIdol extends Idol {
                         // Talisman of Lava + Fire: Grants fire resistance when in contact with lava/fire.
                         if (random.nextDouble() < 0.2) {
                             p.addPotionEffect(new PotionEffect(PotionEffectType.FIRE_RESISTANCE, 20 * 10, 0));
-                            sendMessage(p, this.getItemName() + ": §r§a+火焰保护");
+                            sendMessage(p, this.getItemName() + ": §r§a+Fire Resistance");
                         }
                         break;
 
@@ -48,13 +48,13 @@ public class FlameheartIdol extends Idol {
                                 // Talisman of the Warrior: Grants Strength III when attacked by an entity
                                 if (random.nextDouble() < 0.2) {
                                     p.addPotionEffect(new PotionEffect(PotionEffectType.STRENGTH, 20 * 10, 2));
-                                    sendMessage(p, this.getItemName() + ": §r§a+力量 III");
+                                    sendMessage(p, this.getItemName() + ": §r§a+Stength III");
                                 }
 
                                 // Talisman of the Knight: 30% chance to get regeneration when attacked by an entity.
                                 if (random.nextDouble() < 0.3) {
                                     p.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 20 * 5, 1));
-                                    sendMessage(p, this.getItemName() + ": §r§a+生命恢复");
+                                    sendMessage(p, this.getItemName() + ": §r§a+Regeneration");
                                 }
                                 break;
                             }

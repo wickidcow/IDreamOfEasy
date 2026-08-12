@@ -19,6 +19,6 @@ public class SkeletonRepeller extends MobRepeller {
 
     @Override
     protected String getRepelledEntityName() {
-        return "骷髅";
+        return "Skeleton";
     }
 }

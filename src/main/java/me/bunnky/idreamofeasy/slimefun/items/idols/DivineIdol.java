@@ -3,7 +3,6 @@ package me.bunnky.idreamofeasy.slimefun.items.idols;
 import io.github.thebusybiscuit.slimefun4.api.items.ItemGroup;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
 import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
-import net.guizhanss.guizhanlib.minecraft.utils.compatibility.EnchantmentX;
 import org.bukkit.Material;
 import org.bukkit.Tag;
 import org.bukkit.enchantments.Enchantment;
@@ -18,8 +17,9 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.Map;
 import java.util.Random;
+
 /*
-Divine Idol: The Divine Idol is a powerful artifact that enhances enchanting, amplifies experience gain, and prolongs the durability of tools and armor. With an impressive 80% chance to modify enchantments during the enchanting process, it can increase the level of existing enchantments, ensuring your gear is always at its best. Additionally, there's a 20% chance that it can grant the coveted Fortune enchantment, significantly boosting resource drops from mining. When it comes to experience, the Divine Idol doubles the amount received from any source 20% of the time, accelerating your progress and leveling up. Lastly, this idol protects your tools and armor from breaking; with a 20% chance to restore their durability, your gear will remain in top condition longer than ever. Embrace the power of the Divine Idol to become a true master of enchantments and experience!
+Divine Idol: The Divine Idol is a powerful artifact that enhances enchanting, amplifies experience gain, and prolongs the durability of tools and armor.
 */
 public class DivineIdol extends Idol {
 
@@ -40,7 +40,6 @@ public class DivineIdol extends Idol {
         }
     }
 
-    // Talisman of the Magician & Wizard: Modify or boost enchantments during enchanting
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onEnchant(EnchantItemEvent e) {
         Player p = e.getEnchanter();
@@ -51,39 +50,39 @@ public class DivineIdol extends Idol {
             Map<Enchantment, Integer> enchantments = e.getEnchantsToAdd();
             enchantments.replaceAll((enchantment, level) -> Math.min(level + 1, enchantment.getMaxLevel()));
 
-            sendMessage(p, this.getItemName() + ": §r§a强化附魔!");
-            if ((Tag.ITEMS_PICKAXES.isTagged(type) ||
-                Tag.ITEMS_SHOVELS.isTagged(type) ||
-                Tag.ITEMS_AXES.isTagged(type) ||
-                Tag.ITEMS_HOES.isTagged(type)) && random.nextDouble() < 0.2) {
-                enchantments.put(EnchantmentX.FORTUNE, random.nextInt(3) + 1);
-                sendMessage(p, this.getItemName() + ": §r§a已添加时运 II 附魔!");
+            sendMessage(p, this.getItemName() + ": §r§aEnchantment boosted!");
+            if ((Tag.ITEMS_PICKAXES.isTagged(type)
+                || Tag.ITEMS_SHOVELS.isTagged(type)
+                || Tag.ITEMS_AXES.isTagged(type)
+                || Tag.ITEMS_HOES.isTagged(type))
+                && random.nextDouble() < 0.2) {
+                enchantments.put(Enchantment.FORTUNE, random.nextInt(3) + 1);
+                sendMessage(p, this.getItemName() + ": §r§aFortune added!");
             }
         }
     }
 
-    // Talisman of the Wise: Double experience received from any source
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onPlayerExperience(PlayerExpChangeEvent e) {
         Player p = e.getPlayer();
         if (random.nextDouble() < 0.2) {
             e.setAmount(e.getAmount() * 2);
-            sendMessage(p, this.getItemName() + ": §r§a双倍经验！");
+            sendMessage(p, this.getItemName() + ": §r§aDouble experience!");
         }
     }
 
-    // Talisman of the Anvil: Prevent tool or armor from breaking by restoring durability
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onItemDamage(PlayerItemDamageEvent e) {
         Player p = e.getPlayer();
         ItemStack item = e.getItem();
 
-        if (random.nextDouble() < 0.20) {
-            if (item.getDurability() >= item.getType().getMaxDurability() - 1) {
-                e.setCancelled(true);
-                item.setDurability((short) 0);
-                sendMessage(p, this.getItemName() + ": §r§a已保住 " + item.getItemMeta().getDisplayName() + "§r§a!");
-            }
+        if (random.nextDouble() < 0.20 && item.getDurability() >= item.getType().getMaxDurability() - 1) {
+            e.setCancelled(true);
+            item.setDurability((short) 0);
+            String displayName = item.hasItemMeta() && item.getItemMeta().hasDisplayName()
+                ? item.getItemMeta().getDisplayName()
+                : item.getType().name();
+            sendMessage(p, this.getItemName() + ": §r§aSaved " + displayName + "§r§a!");
         }
     }
 }

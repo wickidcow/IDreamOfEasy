@@ -63,7 +63,7 @@ public class BiomeCompass extends SimpleSlimefunItem<ItemUseHandler> {
         int selectedBiomeIndex = playerBiomeSelection.getOrDefault(p, 0);
 
         if (p.hasCooldown(Material.COMPASS)) {
-            p.sendMessage("§c你必须等待一段时间才能再次使用该物品。");
+            p.sendMessage("§cYou must wait before using this again!");
             return;
         }
 
@@ -75,7 +75,7 @@ public class BiomeCompass extends SimpleSlimefunItem<ItemUseHandler> {
                 selectedBiomeIndex = (selectedBiomeIndex - 1 + biomes.length) % biomes.length;
                 playerBiomeSelection.put(p, selectedBiomeIndex);
             }
-            p.sendMessage("§e已选定生物群系：" + ChatColor.GOLD + biomes[selectedBiomeIndex].name());
+            p.sendMessage("§eSelected biome: " + ChatColor.GOLD + biomes[selectedBiomeIndex].name());
             return;
         }
 
@@ -83,13 +83,13 @@ public class BiomeCompass extends SimpleSlimefunItem<ItemUseHandler> {
         if (closestBiomeLocation != null) {
             p.setCompassTarget(closestBiomeLocation);
             double distance = p.getLocation().distance(closestBiomeLocation);
-            p.sendMessage("§a找到 " + ChatColor.GREEN + biomes[selectedBiomeIndex].name() + " §a生物群系, 距离你 " + ChatColor.GREEN + (int) distance + " §a格！");
+            p.sendMessage("§aFound " + ChatColor.GREEN + biomes[selectedBiomeIndex].name() + " §abiome, " + ChatColor.GREEN + (int) distance + " §ablocks away!");
             Map<Biome, Location> playerDiscovered = playerDiscoveredBiomes.computeIfAbsent(p, k -> new HashMap<>());
             playerDiscovered.put(biomes[selectedBiomeIndex], closestBiomeLocation);
             p.setCooldown(Material.COMPASS, COOLDOWN_TICKS);
             p.playSound(p, Sound.ENTITY_PLAYER_LEVELUP, SoundCategory.PLAYERS, 0.5F, 2F);
         } else {
-            p.sendMessage("§c附近没有找到 " + ChatColor.DARK_RED + biomes[selectedBiomeIndex].name() + " §c生物群系。");
+            p.sendMessage("§cNo " + ChatColor.DARK_RED + biomes[selectedBiomeIndex].name() + " §cbiome nearby.");
             p.setCooldown(Material.COMPASS, COOLDOWN_TICKS);
             p.playSound(p, Sound.BLOCK_ANVIL_LAND, SoundCategory.PLAYERS, 0.4F, 1F);
         }

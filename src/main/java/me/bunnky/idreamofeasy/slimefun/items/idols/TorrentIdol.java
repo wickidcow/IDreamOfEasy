@@ -39,7 +39,7 @@ public class TorrentIdol extends Idol {
                         // Talisman of Water: Grants water breathing when starting to drown.
                         if (random.nextDouble() < 0.2) {
                             p.addPotionEffect(new PotionEffect(PotionEffectType.WATER_BREATHING, 200, 1));
-                            sendMessage(p, this.getItemName() + ": §r§a+水下呼吸");
+                            sendMessage(p, this.getItemName() + ": §r§a+Water Breathing");
                         }
                         break;
 
@@ -47,7 +47,7 @@ public class TorrentIdol extends Idol {
                         // Talisman of the Angel: 75% chance to prevent fall damage.
                         if (random.nextDouble() < 0.75) {
                             e.setCancelled(true);
-                            sendMessage(p, this.getItemName() + ": §r§a已免疫摔落伤害！");
+                            sendMessage(p, this.getItemName() + ": §r§aFall damage absorbed!");
                         }
                         break;
 
@@ -57,7 +57,7 @@ public class TorrentIdol extends Idol {
                             entity.getDamager() instanceof Projectile projectile && !(entity.getDamager() instanceof Trident)) {
                             if (random.nextDouble() < 0.6) {
                                 returnProjectile(p, projectile);
-                                sendMessage(p, this.getItemName() + ": §r§a已反弹投射物！");
+                                sendMessage(p, this.getItemName() + ": §r§aProjectile reflected!");
                             }
                         }
                         break;
@@ -71,7 +71,7 @@ public class TorrentIdol extends Idol {
                     if (random.nextDouble() < 0.6) {
 
                         p.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 100, 1));
-                        sendMessage(p, this.getItemName() + ": §r§a+速度 II");
+                        sendMessage(p, this.getItemName() + ": §r§a+Speed II");
                     }
                 }
             }

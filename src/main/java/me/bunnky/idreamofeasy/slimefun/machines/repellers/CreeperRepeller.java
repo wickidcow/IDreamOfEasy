@@ -19,6 +19,6 @@ public class CreeperRepeller extends MobRepeller {
 
     @Override
     protected String getRepelledEntityName() {
-        return "苦力怕";
+        return "Creeper";
     }
 }

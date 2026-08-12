@@ -1,2 +1,2 @@
-options:
-  auto-update: true
+# IDreamOfEasy Legacy does not self-update.
+# Updates are distributed as direct JAR files through this repository's GitHub Actions and Releases.
