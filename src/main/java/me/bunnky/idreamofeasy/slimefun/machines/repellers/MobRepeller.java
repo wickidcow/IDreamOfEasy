@@ -1,5 +1,6 @@
 package me.bunnky.idreamofeasy.slimefun.machines.repellers;
 
+import com.xzavier0722.mc.plugin.slimefun4.storage.controller.ASlimefunDataContainer;
 import io.github.thebusybiscuit.slimefun4.api.items.ItemGroup;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
@@ -9,12 +10,9 @@ import io.github.thebusybiscuit.slimefun4.core.handlers.BlockBreakHandler;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockPlaceHandler;
 import io.github.thebusybiscuit.slimefun4.core.networks.energy.EnergyNetComponentType;
 import me.bunnky.idreamofeasy.IDreamOfEasy;
-import me.mrCookieSlime.CSCoreLibPlugin.Configuration.Config;
 import me.mrCookieSlime.Slimefun.Objects.handlers.BlockTicker;
-import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
-import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.EntityType;
 import org.bukkit.event.EventHandler;
@@ -25,16 +23,16 @@ import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 /*
 Generalized devices that prevent specific mobs from spawning in the surrounding area.
  */
 
 public abstract class MobRepeller extends SlimefunItem implements Listener, EnergyNetComponent {
 
-    private final Set<String> repellerChunks = new HashSet<>();
+    private final Set<String> repellerChunks = ConcurrentHashMap.newKeySet();
     private final int cap;
     private final int ecost;
 
@@ -52,28 +50,15 @@ public abstract class MobRepeller extends SlimefunItem implements Listener, Ener
             }
 
             @Override
-            public void tick(Block b, SlimefunItem sfItem, Config config) {
+            public void tick(Block b, SlimefunItem sfItem, ASlimefunDataContainer data) {
                 Location loc = b.getLocation();
-                World w = loc.getWorld();
+                String chunkKey = getChunkKey(b.getChunk());
 
-                if (w == null) {
-                    return;
-                }
-
-                if (getCharge(loc) >= ecost) {
-                    removeCharge(loc, ecost);
-
-                    Chunk chunk = b.getChunk();
-                    String chunkKey = getChunkKey(chunk);
-                    if (!repellerChunks.contains(chunkKey)) {
-                        repellerChunks.add(chunkKey);
-                    }
+                if (getChargeLong(loc, data) >= ecost) {
+                    removeCharge(loc, (long) ecost, data);
+                    repellerChunks.add(chunkKey);
                 } else {
-                    Chunk chunk = b.getChunk();
-                    String chunkKey = getChunkKey(chunk);
-                    if (repellerChunks.contains(chunkKey)) {
-                        repellerChunks.remove(chunkKey);
-                    }
+                    repellerChunks.remove(chunkKey);
                 }
             }
         });
@@ -82,12 +67,8 @@ public abstract class MobRepeller extends SlimefunItem implements Listener, Ener
             @Override
             public void onPlayerPlace(@NotNull BlockPlaceEvent blockPlaceEvent) {
                 Block b = blockPlaceEvent.getBlock();
-                Chunk chunk = b.getChunk();
-
-                String chunkKey = getChunkKey(chunk);
-                repellerChunks.add(chunkKey);
-
-                blockPlaceEvent.getPlayer().sendMessage(ChatColor.YELLOW + getRepelledEntityName() + "§es will no longer spawn in this chunk.");
+                repellerChunks.add(getChunkKey(b.getChunk()));
+                blockPlaceEvent.getPlayer().sendMessage("§e" + getRepelledEntityName() + "§es will no longer spawn in this chunk.");
             }
         });
 
@@ -95,15 +76,10 @@ public abstract class MobRepeller extends SlimefunItem implements Listener, Ener
             @Override
             public void onPlayerBreak(@NotNull BlockBreakEvent blockBreakEvent, @NotNull ItemStack itemStack, @NotNull List<ItemStack> list) {
                 Block b = blockBreakEvent.getBlock();
-                Chunk chunk = b.getChunk();
-
-                String chunkKey = getChunkKey(chunk);
-                repellerChunks.remove(chunkKey);
-
-                blockBreakEvent.getPlayer().sendMessage(ChatColor.YELLOW + getRepelledEntityName() + "§es may now spawn in this chunk.");
+                repellerChunks.remove(getChunkKey(b.getChunk()));
+                blockBreakEvent.getPlayer().sendMessage("§e" + getRepelledEntityName() + "§es may now spawn in this chunk.");
             }
         });
-
     }
 
     protected abstract EntityType getRepelledEntityType();
@@ -117,9 +93,7 @@ public abstract class MobRepeller extends SlimefunItem implements Listener, Ener
     @EventHandler
     public void onCreatureSpawn(CreatureSpawnEvent e) {
         if (e.getEntityType() == getRepelledEntityType()) {
-            Chunk chunk = e.getLocation().getChunk();
-            String chunkKey = getChunkKey(chunk);
-
+            String chunkKey = getChunkKey(e.getLocation().getChunk());
             if (repellerChunks.contains(chunkKey)) {
                 e.setCancelled(true);
             }
@@ -132,7 +106,13 @@ public abstract class MobRepeller extends SlimefunItem implements Listener, Ener
     }
 
     @Override
+    public long getCapacityLong() {
+        return cap;
+    }
+
+    @SuppressWarnings("deprecation")
+    @Override
     public int getCapacity() {
-        return this.cap;
+        return cap;
     }
 }
