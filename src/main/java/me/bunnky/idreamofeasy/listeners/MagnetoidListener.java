@@ -1,6 +1,7 @@
 package me.bunnky.idreamofeasy.listeners;
 
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import me.bunnky.idreamofeasy.IDreamOfEasy;
 import me.bunnky.idreamofeasy.slimefun.items.Magnetoid;
 import me.bunnky.idreamofeasy.slimefun.tasks.MagnetoidTask;
@@ -10,53 +11,79 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.scheduler.BukkitTask;
 
 import javax.annotation.Nonnull;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class MagnetoidListener implements Listener {
 
-    public static final Map<UUID, BukkitTask> activeTasks = new HashMap<>();
+    public static final Map<UUID, ScheduledTask> activeTasks = new ConcurrentHashMap<>();
+
+    private final IDreamOfEasy plugin;
 
     public MagnetoidListener(@Nonnull IDreamOfEasy plugin) {
+        this.plugin = plugin;
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
-        Bukkit.getScheduler().runTaskTimer(plugin, this::checkAllPlayersForMagnetoid, 0L, 10L);
+
+        Bukkit.getGlobalRegionScheduler().runAtFixedRate(
+            plugin,
+            ignored -> checkAllPlayersForMagnetoid(),
+            1L,
+            10L
+        );
     }
 
     private void checkAllPlayersForMagnetoid() {
-        for (Player p : Bukkit.getOnlinePlayers()) {
-            if (p.getGameMode() != GameMode.SPECTATOR) {
-                handleMagnetoid(p);
-            } else {
-                cancelTask(p);
-            }
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            player.getScheduler().execute(
+                plugin,
+                () -> {
+                    if (player.getGameMode() != GameMode.SPECTATOR) {
+                        handleMagnetoid(player);
+                    } else {
+                        cancelTask(player);
+                    }
+                },
+                () -> activeTasks.remove(player.getUniqueId()),
+                1L
+            );
         }
     }
 
-    private void handleMagnetoid(Player p) {
-        SlimefunItem sfItem = SlimefunItem.getByItem(p.getInventory().getItemInOffHand());
+    private void handleMagnetoid(Player player) {
+        UUID playerId = player.getUniqueId();
+        SlimefunItem sfItem = SlimefunItem.getByItem(player.getInventory().getItemInOffHand());
+
         if (sfItem instanceof Magnetoid magnetoid) {
-            if (!activeTasks.containsKey(p.getUniqueId()) && magnetoid.canUse(p, true)) {
-                BukkitTask task = new MagnetoidTask(p, magnetoid.getR(), magnetoid).runTaskTimer(IDreamOfEasy.getInstance(), 0L, 10L);
-                activeTasks.put(p.getUniqueId(), task);
+            if (!activeTasks.containsKey(playerId) && magnetoid.canUse(player, true)) {
+                MagnetoidTask worker = new MagnetoidTask(player, magnetoid.getR(), magnetoid);
+                ScheduledTask task = player.getScheduler().runAtFixedRate(
+                    plugin,
+                    worker::run,
+                    () -> activeTasks.remove(playerId),
+                    1L,
+                    10L
+                );
+                if (task != null) {
+                    activeTasks.put(playerId, task);
+                }
             }
         } else {
-            cancelTask(p);
+            cancelTask(player);
         }
     }
 
-    public void cancelTask(Player p) {
-        if (activeTasks.containsKey(p.getUniqueId())) {
-            activeTasks.get(p.getUniqueId()).cancel();
-            activeTasks.remove(p.getUniqueId());
+    public void cancelTask(Player player) {
+        ScheduledTask task = activeTasks.remove(player.getUniqueId());
+        if (task != null) {
+            task.cancel();
         }
     }
 
     @EventHandler
-    public void onPlayerQuit(PlayerQuitEvent e) {
-        cancelTask(e.getPlayer());
+    public void onPlayerQuit(PlayerQuitEvent event) {
+        cancelTask(event.getPlayer());
     }
 }
