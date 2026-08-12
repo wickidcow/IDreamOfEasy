@@ -1,5 +1,6 @@
 package me.bunnky.idreamofeasy.slimefun.machines;
 
+import com.xzavier0722.mc.plugin.slimefun4.storage.controller.ASlimefunDataContainer;
 import io.github.thebusybiscuit.slimefun4.api.items.ItemGroup;
 import io.github.thebusybiscuit.slimefun4.api.items.ItemSetting;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
@@ -13,9 +14,7 @@ import io.github.thebusybiscuit.slimefun4.implementation.handlers.VanillaInvento
 import io.github.thebusybiscuit.slimefun4.implementation.items.SimpleSlimefunItem;
 import io.github.thebusybiscuit.slimefun4.libraries.dough.protection.Interaction;
 import me.bunnky.idreamofeasy.utils.IDOEUtility;
-import me.mrCookieSlime.CSCoreLibPlugin.Configuration.Config;
 import me.mrCookieSlime.Slimefun.Objects.handlers.BlockTicker;
-import me.mrCookieSlime.Slimefun.api.BlockStorage;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -23,13 +22,12 @@ import org.bukkit.Particle;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.type.Hopper;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Objects;
+import java.util.Collection;
+import java.util.Map;
 /*
 A convenient drop-off point for players to store items easily.
  */
@@ -56,89 +54,68 @@ public class PlayerHopper extends SimpleSlimefunItem<BlockTicker> implements Ene
     public @NotNull BlockTicker getItemHandler() {
         return new BlockTicker() {
             @Override
-            public void tick(Block b, SlimefunItem sfItem, Config config) {
+            public void tick(Block b, SlimefunItem sfItem, ASlimefunDataContainer data) {
                 if (b.getType() != Material.HOPPER) {
-                    BlockStorage.clearBlockInfo(b);
+                    Slimefun.getDatabaseManager().getBlockDataController().removeBlock(b.getLocation());
                     return;
                 }
 
                 if (toggleable.getValue()) {
                     Hopper hopper = (Hopper) b.getBlockData();
-
                     if (!hopper.isEnabled()) {
                         return;
                     }
                 }
 
+                org.bukkit.block.Hopper hopperState = (org.bukkit.block.Hopper) b.getState();
+                Inventory hopperInventory = hopperState.getInventory();
+                if (!hopperInventory.getViewers().isEmpty()) {
+                    return;
+                }
+
                 Location loc = b.getLocation();
-                boolean playSound = false;
-                double xMin = -1;
-                double xMax = 1;
-                double yMin = 0;
-                double yMax = 2.0;
-                double zMin = -1;
-                double zMax = 1;
+                Collection<Player> players = loc.getNearbyPlayers(2.0, 2.0, 2.0);
 
-                List<Player> players = (List<Player>) loc.getNearbyPlayers(xMax - xMin, yMax - yMin, zMax - zMin);
-
-                for (Player p : players) {
-                    if (!(Slimefun.getProtectionManager().hasPermission(p, b, Interaction.INTERACT_BLOCK)) || p.getGameMode() == GameMode.SPECTATOR) {
+                for (Player player : players) {
+                    if (!Slimefun.getProtectionManager().hasPermission(player, b, Interaction.INTERACT_BLOCK)
+                        || player.getGameMode() == GameMode.SPECTATOR) {
                         continue;
                     }
 
-                    Location ploc = p.getLocation();
-
+                    Location playerLocation = player.getLocation();
                     double blockCenterX = loc.getX() + 0.5;
                     double blockCenterY = loc.getY() + 0.5;
                     double blockCenterZ = loc.getZ() + 0.5;
 
-                    if (ploc.getX() >= blockCenterX + xMin && ploc.getX() <= blockCenterX + xMax &&
-                        ploc.getY() >= blockCenterY + yMin && ploc.getY() <= blockCenterY + yMax &&
-                        ploc.getZ() >= blockCenterZ + zMin && ploc.getZ() <= blockCenterZ + zMax) {
+                    if (playerLocation.getX() < blockCenterX - 1 || playerLocation.getX() > blockCenterX + 1
+                        || playerLocation.getY() < blockCenterY || playerLocation.getY() > blockCenterY + 2
+                        || playerLocation.getZ() < blockCenterZ - 1 || playerLocation.getZ() > blockCenterZ + 1) {
+                        continue;
+                    }
 
-                        org.bukkit.block.Hopper h = (org.bukkit.block.Hopper) b.getState();
-                        ItemStack[] items = p.getInventory().getContents();
-                        ItemStack[] hItems = h.getInventory().getContents();
-                        int emptySlots = (int) Arrays.stream(hItems).filter(Objects::isNull).count();
-
-                        if (!(h.getInventory().getViewers().isEmpty())){
+                    for (ItemStack item : player.getInventory().getStorageContents()) {
+                        if (item == null || item.getType().isAir()) {
+                            continue;
+                        }
+                        if (getChargeLong(loc, data) < ecost) {
                             return;
                         }
 
-                        for (ItemStack item : items) {
-                            if (item != null && getCharge(loc) >= ecost) {
-                                ItemStack offhandItem = p.getInventory().getItemInOffHand();
-                                ItemStack[] armorContents = p.getInventory().getArmorContents();
+                        int originalAmount = item.getAmount();
+                        Map<Integer, ItemStack> leftover = hopperInventory.addItem(item.clone());
+                        int leftoverAmount = leftover.values().stream().mapToInt(ItemStack::getAmount).sum();
+                        int moved = originalAmount - leftoverAmount;
 
-                                boolean isArmorOrOffhand = false;
+                        if (moved <= 0) {
+                            continue;
+                        }
 
-                                for (ItemStack armorItem : armorContents) {
-                                    if (armorItem != null && item.isSimilar(armorItem)) {
-                                        isArmorOrOffhand = true;
-                                        break;
-                                    }
-                                }
+                        item.setAmount(originalAmount - moved);
+                        removeCharge(loc, (long) ecost, data);
+                        b.getWorld().spawnParticle(Particle.CRIT, b.getLocation().clone().add(0.5, 1, 0.5), 10, 0.3, 0.3, 0.3, 0.05);
 
-                                if (!isArmorOrOffhand && !item.isSimilar(offhandItem) && emptySlots > 0) {
-                                    HashMap<Integer, ItemStack> leftover = h.getInventory().addItem(item);
-
-                                    if (leftover.isEmpty()) {
-                                        p.getInventory().removeItem(item);
-                                        removeCharge(loc, ecost);
-                                        emptySlots--;
-                                        b.getWorld().spawnParticle(Particle.CRIT, b.getLocation().add(0.5, 1, 0.5), 10, 0.3, 0.3, 0.3, 0.05);
-                                        playSound = true;
-                                    } else {
-                                        for (ItemStack remaining : leftover.values()) {
-                                            p.getInventory().addItem(remaining);
-                                        }
-                                    }
-
-                                    if (playSound && !silent.getValue()) {
-                                        SoundEffect.INFUSED_HOPPER_TELEPORT_SOUND.playAt(b);
-                                    }
-                                }
-                            }
+                        if (!silent.getValue()) {
+                            SoundEffect.INFUSED_HOPPER_TELEPORT_SOUND.playAt(b);
                         }
                     }
                 }
@@ -157,8 +134,13 @@ public class PlayerHopper extends SimpleSlimefunItem<BlockTicker> implements Ene
     }
 
     @Override
-    public int getCapacity() {
-        return this.cap;
+    public long getCapacityLong() {
+        return cap;
     }
 
+    @SuppressWarnings("deprecation")
+    @Override
+    public int getCapacity() {
+        return cap;
+    }
 }
